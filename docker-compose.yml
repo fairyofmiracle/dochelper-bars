@@ -1,0 +1,56 @@
+
+services:
+  qdrant:
+    image: qdrant/qdrant:v1.12.5
+    platform: linux/amd64
+    ports:
+      - "6333:6333"
+    volumes:
+      - ${DATA_ROOT}/qdrant:/qdrant/storage
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-bookworm
+    platform: linux/amd64
+    ports:
+      - "6379:6379"
+    volumes:
+      - ${DATA_ROOT}/redis:/data
+    restart: unless-stopped
+
+  ollama:
+    image: ollama/ollama:latest
+    platform: linux/amd64
+    ports:
+      - "11434:11434"
+    volumes:
+      - ${DATA_ROOT}/ollama:/root/.ollama
+    restart: unless-stopped
+
+  app:
+    profiles: ["full"]
+    build: .
+    platform: linux/amd64
+    ports:
+      - "8026:8026"
+    env_file:
+      - .env
+    environment:
+      APP_PORT: "8026"
+      QDRANT_URL: http://qdrant:6333
+      REDIS_URL: redis://redis:6379/0
+      OLLAMA_BASE_URL: http://ollama:11434
+      HF_HOME: /cache/huggingface
+      TELEGRAM_ENABLED: "true"
+    volumes:
+      - ./app:/app/app
+      - ./main.py:/app/main.py
+      - ./static:/app/static
+      - ./data/docs:/app/data/docs
+      - ./data/uploads:/app/data/uploads
+      - ${DATA_ROOT}/huggingface:/cache/huggingface
+    depends_on:
+      - qdrant
+      - redis
+      - ollama
+    restart: unless-stopped

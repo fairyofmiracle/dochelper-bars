@@ -1,0 +1,42 @@
+# Secrets and env
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# Logs
+*.log
+
+# Local uploads (not case docs from repo)
+data/uploads/*
+!data/uploads/.gitkeep
+
+# Large case documents — keep in AO_BARS_GRUP, not in git
+data/docs/*.docx
+data/docs/*.pdf
+
+# Caches / models (on D: drive, never commit)
+.cache/
+models/
+.huggingface/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Docker local overrides
+docker-compose.override.yml

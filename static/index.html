@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DocHelper Барс</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <header>
+    <h1>DocHelper Барс</h1>
+    <p>RAG-помощник по документации · порт 8026</p>
+    <nav>
+      <button class="tab active" data-tab="chat">Чат</button>
+      <button class="tab" data-tab="admin">Админка</button>
+      <button class="tab" data-tab="stats">Аналитика</button>
+    </nav>
+  </header>
+
+  <main>
+    <section id="chat" class="panel active">
+      <div id="messages"></div>
+      <form id="chat-form">
+        <input id="chat-input" placeholder="Задайте вопрос по документации…" autocomplete="off" />
+        <button type="submit">Отправить</button>
+        <button type="button" id="escalate-btn">Оператор</button>
+      </form>
+    </section>
+
+    <section id="admin" class="panel">
+      <h2>Документы</h2>
+      <p class="hint">Загрузите .docx / .pdf / .md — файл будет проиндексирован в Qdrant.</p>
+      <form id="upload-form">
+        <input type="file" id="file-input" accept=".docx,.pdf,.md,.txt" />
+        <button type="submit">Загрузить</button>
+      </form>
+      <button id="reindex-btn">Переиндексировать всё</button>
+      <ul id="doc-list"></ul>
+    </section>
+
+    <section id="stats" class="panel">
+      <div id="stats-box">Загрузка…</div>
+    </section>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

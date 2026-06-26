@@ -1,0 +1,49 @@
+from pathlib import Path
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
+    telegram_bot_token: str = ""
+    telegram_support_chat_id: str = ""
+
+    llm_provider: str = "ollama"
+    ollama_base_url: str = "http://127.0.0.1:11434"
+    ollama_model: str = "qwen2.5:3b-instruct"
+    ollama_vision_model: str = ""
+    gigachat_credentials: str = ""
+
+    embed_provider: str = "sentence-transformers"
+    embed_model: str = "intfloat/multilingual-e5-base"
+
+    qdrant_url: str = "http://127.0.0.1:6333"
+    qdrant_collection: str = "bars_docs"
+
+    redis_url: str = "redis://127.0.0.1:6379/0"
+
+    confidence_threshold: float = 0.45
+    top_k_chunks: int = 3
+    chunk_size: int = 600
+    chunk_overlap: int = 80
+
+    app_host: str = "0.0.0.0"
+    app_port: int = 8026
+    docs_dir: Path = Path("data/docs")
+    upload_dir: Path = Path("data/uploads")
+
+    bot_name: str = "DocHelper Барс"
+    auto_index_on_start: bool = True
+    telegram_enabled: bool = True
+
+    escalation_keywords: str = "оператор,человек,живой,менеджер"
+
+
+settings = Settings()
+
+ESCALATION_WORDS = {
+    w.strip().lower()
+    for w in settings.escalation_keywords.split(",")
+    if w.strip()
+}

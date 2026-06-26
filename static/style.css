@@ -1,0 +1,80 @@
+:root {
+  --bg: #0f1419;
+  --card: #1a2332;
+  --accent: #2d6cdf;
+  --text: #e8eef7;
+  --muted: #8b9cb3;
+  --border: #2a3544;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+header {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--card);
+}
+header h1 { margin: 0; font-size: 1.4rem; }
+header p { margin: 0.25rem 0 0; color: var(--muted); font-size: 0.9rem; }
+
+nav { margin-top: 0.75rem; display: flex; gap: 0.5rem; }
+.tab {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 0.4rem 0.9rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.tab.active { background: var(--accent); border-color: var(--accent); }
+
+main { max-width: 900px; margin: 0 auto; padding: 1rem; }
+.panel { display: none; }
+.panel.active { display: block; }
+
+#messages {
+  min-height: 360px;
+  max-height: 55vh;
+  overflow-y: auto;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.msg { margin-bottom: 1rem; line-height: 1.5; white-space: pre-wrap; }
+.msg.user { color: #9ec5ff; }
+.msg.bot { color: var(--text); }
+.msg.meta { font-size: 0.8rem; color: var(--muted); }
+
+#chat-form { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+#chat-input { flex: 1; min-width: 200px; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border); background: var(--card); color: var(--text); }
+button {
+  padding: 0.6rem 1rem;
+  border: none;
+  border-radius: 6px;
+  background: var(--accent);
+  color: white;
+  cursor: pointer;
+}
+button:hover { filter: brightness(1.1); }
+#escalate-btn { background: #c44; }
+
+.hint { color: var(--muted); font-size: 0.9rem; }
+#doc-list { list-style: none; padding: 0; }
+#doc-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+#stats-box { background: var(--card); padding: 1rem; border-radius: 8px; border: 1px solid var(--border); }
