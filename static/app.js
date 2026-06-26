@@ -28,7 +28,7 @@ function setChatBusy(busy) {
   document.getElementById("escalate-btn").disabled = busy;
 }
 
-function addMsg(text, role, meta = "", needsOperator = false, isLoading = false) {
+function addMsg(text, role, meta = "", needsOperator = false, isLoading = false, imageUrls = []) {
   const row = document.createElement("div");
   row.className = "msg-row " + role + (isLoading ? " loading" : "");
   if (isLoading) row.dataset.loading = "1";
@@ -44,6 +44,19 @@ function addMsg(text, role, meta = "", needsOperator = false, isLoading = false)
   bubble.className = "msg-bubble msg " + role;
   bubble.textContent = text;
   body.appendChild(bubble);
+
+  if (imageUrls?.length) {
+    const gallery = document.createElement("div");
+    gallery.className = "msg-images";
+    imageUrls.forEach((url) => {
+      const img = document.createElement("img");
+      img.src = url;
+      img.alt = "Иллюстрация из документации";
+      img.loading = "lazy";
+      gallery.appendChild(img);
+    });
+    body.appendChild(gallery);
+  }
 
   if (meta) {
     const m = document.createElement("div");
@@ -75,6 +88,14 @@ function removeLoadingEl(el) {
   if (el && el.parentNode) el.parentNode.removeChild(el);
 }
 
+function applyChatResponse(data, loadingEl) {
+  removeLoadingEl(loadingEl);
+  const meta =
+    `confidence: ${(data.confidence * 100).toFixed(0)}%` +
+    (data.sources?.length ? ` · ${data.sources.join(", ")}` : "");
+  addMsg(data.answer, "bot", meta, data.needs_operator && !data.escalated, false, data.images || []);
+}
+
 async function sendChat(text, escalate = false) {
   addMsg(text, "user");
   setChatBusy(true);
@@ -91,18 +112,13 @@ async function sendChat(text, escalate = false) {
         escalate,
       }),
     });
-    removeLoadingEl(loadingEl);
 
     if (!res.ok) {
       const errText = await res.text();
       throw new Error(errText || `HTTP ${res.status}`);
     }
 
-    const data = await res.json();
-    const meta =
-      `confidence: ${(data.confidence * 100).toFixed(0)}%` +
-      (data.sources?.length ? ` · ${data.sources.join(", ")}` : "");
-    addMsg(data.answer, "bot", meta, data.needs_operator && !data.escalated);
+    applyChatResponse(await res.json(), loadingEl);
   } catch (err) {
     removeLoadingEl(loadingEl);
     addMsg(
@@ -111,6 +127,33 @@ async function sendChat(text, escalate = false) {
       String(err.message || err),
       true
     );
+  } finally {
+    setChatBusy(false);
+    chatInput.focus();
+  }
+}
+
+async function sendChatImage(file, caption = "") {
+  addMsg(caption || "🖼 [скриншот]", "user");
+  setChatBusy(true);
+  const loadingEl = addMsg("🖼 Анализирую изображение…", "bot", "", false, true);
+
+  try {
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("message", caption || "Что на скриншоте? Подскажите по документации.");
+    fd.append("session_id", sessionId);
+    fd.append("user_label", "Web UI");
+
+    const res = await fetch("/api/chat/image", { method: "POST", body: fd });
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(errText || `HTTP ${res.status}`);
+    }
+    applyChatResponse(await res.json(), loadingEl);
+  } catch (err) {
+    removeLoadingEl(loadingEl);
+    addMsg("Не удалось обработать изображение.", "bot", String(err.message || err), true);
   } finally {
     setChatBusy(false);
     chatInput.focus();
@@ -126,6 +169,15 @@ document.getElementById("chat-form").addEventListener("submit", (e) => {
 });
 
 document.getElementById("escalate-btn").addEventListener("click", () => sendChat("оператор", true));
+
+document.getElementById("chat-image").addEventListener("change", (e) => {
+  const file = e.target.files?.[0];
+  e.target.value = "";
+  if (!file) return;
+  const caption = chatInput.value.trim();
+  chatInput.value = "";
+  sendChatImage(file, caption);
+});
 
 const chips = document.getElementById("faq-chips");
 FAQ_CHIPS.forEach((q) => {
@@ -302,8 +354,10 @@ function escapeHtml(s) {
 }
 
 addMsg(
-  "Здравствуйте! Я DocHelper — виртуальный помощник по документации АО «БАРС Груп».\n\n" +
-    "Задайте вопрос или выберите тему ниже. Ответ придёт с указанием источника. Если информации нет — нажмите «Оператор».",
+  "Привет! Я DocHelper Барс, виртуальный помощник 👋\n\n" +
+    "Я изучил документацию БАРС-Офис и корпоративных сервисов Барс Груп и готов ответить на Ваши вопросы.\n\n" +
+    "Выберите тему ниже или задайте свой вопрос. Если понадобится живой человек — нажмите «Оператор».\n\n" +
+    "Чем могу помочь?",
   "bot"
 );
 

@@ -12,6 +12,7 @@ from qdrant_client.http import models as qmodels
 from app.config import settings
 from app.rag.embedder import embed_texts
 from app.rag.parser import chunk_text, list_document_files, parse_document
+from app.rag.image_store import save_doc_image
 from app.rag.vision import describe_image
 
 logger = logging.getLogger(__name__)
@@ -112,9 +113,10 @@ def index_all(clear: bool = False) -> IndexStats:
                     stats.chunks += 1
 
             for img_name, img_bytes in images:
+                rel_path = save_doc_image(file_id, img_name, img_bytes)
                 desc = describe_image(img_bytes, source, img_name)
-                if not desc:
-                    continue
+                if not desc.strip():
+                    desc = f"[Иллюстрация {img_name} из {source}]"
                 vec = embed_texts([desc])[0]
                 idx = stats.chunks
                 points.append(
@@ -128,6 +130,7 @@ def index_all(clear: bool = False) -> IndexStats:
                             "text": desc,
                             "kind": "image",
                             "image": img_name,
+                            "image_path": rel_path,
                         },
                     )
                 )

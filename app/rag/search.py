@@ -16,6 +16,7 @@ class SearchHit:
     score: float
     kind: str = "text"
     image: str = ""
+    image_path: str = ""
 
 
 def _get_client() -> QdrantClient:
@@ -48,6 +49,7 @@ def search(query: str, top_k: int | None = None) -> list[SearchHit]:
                 score=float(r.score),
                 kind=str(payload.get("kind", "text")),
                 image=str(payload.get("image", "")),
+                image_path=str(payload.get("image_path", "")),
             )
         )
     return hits

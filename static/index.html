@@ -49,16 +49,22 @@
           <span class="badge">Qdrant</span>
           <span class="badge">GigaChat</span>
           <span class="badge">Whisper</span>
+          <span class="badge">Vision</span>
         </div>
       </div>
 
       <div class="chat-card glass">
         <div id="messages" class="messages"></div>
-        <div id="faq-chips" class="faq-chips"></div>
+        <p class="faq-label">🔖 Частые темы</p>
+        <div id="faq-chips" class="faq-chips" aria-label="Частые темы"></div>
         <form id="chat-form" class="chat-form">
           <div class="input-wrap">
             <input id="chat-input" placeholder="Задайте вопрос по документации…" autocomplete="off" />
           </div>
+          <label class="btn btn-outline image-upload-btn" title="Прикрепить скриншот">
+            🖼
+            <input type="file" id="chat-image" accept="image/*" hidden />
+          </label>
           <button type="submit" class="btn btn-primary">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
             Отправить

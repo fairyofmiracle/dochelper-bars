@@ -14,3 +14,4 @@ class ChatResponse(BaseModel):
     sources: list[str]
     needs_operator: bool
     escalated: bool
+    images: list[str] = []

@@ -296,6 +296,34 @@ body {
 .msg-actions { margin: -0.25rem 0 0.75rem 2.75rem; }
 
 /* ── FAQ chips ── */
+.msg-images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.65rem;
+}
+.msg-images img {
+  max-width: min(100%, 320px);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.2);
+}
+.image-upload-btn {
+  cursor: pointer;
+  min-width: 2.75rem;
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+}
+.image-upload-btn input { display: none; }
+
+.faq-label {
+  margin: 0 0 0.45rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
 .faq-chips {
   display: flex;
   flex-wrap: wrap;

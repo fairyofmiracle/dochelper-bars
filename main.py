@@ -25,6 +25,7 @@ from app.api.admin import router as admin_router
 from app.api.analytics import router as analytics_router
 from app.api.chat import router as chat_router
 from app.config import settings
+from app.rag.image_store import resolve_doc_image
 from app.rag.indexer import collection_info, index_all
 from app.rag.parser import list_document_files
 
@@ -41,6 +42,7 @@ STATIC = ROOT / "static"
 async def lifespan(app: FastAPI):
     settings.docs_dir.mkdir(parents=True, exist_ok=True)
     settings.upload_dir.mkdir(parents=True, exist_ok=True)
+    settings.doc_images_dir.mkdir(parents=True, exist_ok=True)
 
     try:
         from app.llm.warmup import warmup_ollama
@@ -102,6 +104,16 @@ if STATIC.exists():
     app.mount("/static", StaticFiles(directory=str(STATIC)), name="static")
 
 
+@app.get("/api/doc-images/{file_path:path}")
+async def doc_image(file_path: str):
+    resolved = resolve_doc_image(file_path)
+    if not resolved:
+        from fastapi import HTTPException
+
+        raise HTTPException(status_code=404, detail="Image not found")
+    return FileResponse(resolved)
+
+
 @app.get("/")
 async def index_page():
     index = STATIC / "index.html"
@@ -158,6 +170,8 @@ async def health():
         "telegram_token_set": bool(settings.telegram_bot_token),
         "support_chat_set": bool(settings.telegram_support_chat_id),
         "docs_count": docs_count,
+        "vision_ready": bool(settings.ollama_vision_model.strip()),
+        "doc_images_dir": str(settings.doc_images_dir),
     }
 
 

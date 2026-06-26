@@ -1,6 +1,9 @@
 from pathlib import Path
+import os
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+_data_root = Path(os.getenv("DATA_ROOT", "D:/bars-support-bot-data"))
 
 
 class Settings(BaseSettings):
@@ -34,8 +37,10 @@ class Settings(BaseSettings):
     app_port: int = 8026
     docs_dir: Path = Path("data/docs")
     upload_dir: Path = Path("data/uploads")
+    doc_images_dir: Path = _data_root / "doc-images"
 
     bot_name: str = "DocHelper Барс"
+    bot_product_name: str = "БАРС-Офис и корпоративных сервисов Барс Груп"
     auto_index_on_start: bool = True
     telegram_enabled: bool = True
 
