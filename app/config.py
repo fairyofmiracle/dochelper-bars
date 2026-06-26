@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     ollama_model: str = "qwen2.5:3b-instruct"
     ollama_vision_model: str = ""
     gigachat_credentials: str = ""
+    gigachat_model: str = "GigaChat"
+    gigachat_scope: str = "GIGACHAT_API_PERS"
 
     embed_provider: str = "sentence-transformers"
     embed_model: str = "intfloat/multilingual-e5-base"
@@ -36,6 +38,9 @@ class Settings(BaseSettings):
     bot_name: str = "DocHelper Барс"
     auto_index_on_start: bool = True
     telegram_enabled: bool = True
+
+    whisper_enabled: bool = True
+    whisper_model: str = "base"
 
     escalation_keywords: str = "оператор,человек,живой,менеджер"
 

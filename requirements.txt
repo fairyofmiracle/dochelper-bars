@@ -22,3 +22,7 @@ lxml>=5.0.0
 redis>=5.0.0
 
 gigachat>=0.1.40
+
+# Голос → текст (локально, CPU)
+faster-whisper>=1.1.0
+imageio-ffmpeg>=0.5.0

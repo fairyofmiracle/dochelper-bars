@@ -58,8 +58,21 @@ def _ollama(system: str, user: str) -> str:
 
 def _gigachat(system: str, user: str) -> str:
     from gigachat import GigaChat
+    from gigachat.models import Chat, Messages, MessagesRole
 
-    prompt = f"{system}\n\n{user}"
-    with GigaChat(credentials=settings.gigachat_credentials, verify_ssl_certs=False) as client:
-        resp = client.chat(prompt)
+    payload = Chat(
+        messages=[
+            Messages(role=MessagesRole.SYSTEM, content=system),
+            Messages(role=MessagesRole.USER, content=user),
+        ],
+        temperature=0.2,
+        max_tokens=400,
+    )
+    with GigaChat(
+        credentials=settings.gigachat_credentials,
+        scope=settings.gigachat_scope,
+        model=settings.gigachat_model,
+        verify_ssl_certs=False,
+    ) as client:
+        resp = client.chat(payload)
     return (resp.choices[0].message.content or "").strip()

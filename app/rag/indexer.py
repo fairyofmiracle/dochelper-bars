@@ -143,6 +143,21 @@ def index_all(clear: bool = False) -> IndexStats:
         for i in range(0, len(points), batch):
             client.upsert(collection_name=settings.qdrant_collection, points=points[i : i + batch])
 
+        # sanity check: reject silently-zero vectors (broken embedder)
+        sample, _ = client.scroll(
+            collection_name=settings.qdrant_collection, limit=3, with_vectors=True
+        )
+        bad = sum(
+            1
+            for p in sample
+            if not p.vector or sum(x * x for x in p.vector) < 1e-6
+        )
+        if bad == len(sample) and sample:
+            stats.errors.append(
+                "Индексация дала нулевые вектора — проверьте embedding-модель и переиндексируйте"
+            )
+            logger.error("Index sanity check failed: all sampled vectors are zero")
+
     return stats
 
 

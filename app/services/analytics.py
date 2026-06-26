@@ -3,7 +3,8 @@ from __future__ import annotations
 
 import json
 import logging
-from collections import deque
+import re
+from collections import Counter, deque
 from datetime import datetime, timezone
 
 from redis import Redis
@@ -17,6 +18,59 @@ _mem_auto = 0
 _mem_esc = 0
 _mem_log: deque = deque(maxlen=500)
 _redis_ok: bool | None = None
+
+_SKIP_QUESTIONS = {"/operator", "оператор", "❓ задать вопрос", "❌ отмена", "🧑‍💼 переключить на оператора"}
+
+
+def _normalize_question(text: str) -> str:
+    q = re.sub(r"\s+", " ", text.strip().lower())
+    if q in _SKIP_QUESTIONS or q.startswith("/"):
+        return ""
+    return q[:200]
+
+
+def _aggregate(recent: list[dict]) -> dict:
+    q_counter: Counter[str] = Counter()
+    src_counter: Counter[str] = Counter()
+    buckets = {"high": 0, "medium": 0, "low": 0}
+
+    for row in recent:
+        q = _normalize_question(row.get("question", ""))
+        if q:
+            q_counter[q] += 1
+        src = str(row.get("source", "")).strip()
+        if src:
+            src_counter[src] += 1
+        conf = float(row.get("confidence", 0))
+        if conf >= 0.7:
+            buckets["high"] += 1
+        elif conf >= 0.45:
+            buckets["medium"] += 1
+        else:
+            buckets["low"] += 1
+
+    return {
+        "top_questions": [
+            {"question": q, "count": c} for q, c in q_counter.most_common(10)
+        ],
+        "top_sources": [
+            {"source": s, "count": c} for s, c in src_counter.most_common(8)
+        ],
+        "confidence_buckets": buckets,
+    }
+
+
+def _build_stats(total: int, auto: int, esc: int, recent: list[dict], storage: str) -> dict:
+    agg = _aggregate(recent)
+    return {
+        "total_queries": total,
+        "auto_answered": auto,
+        "escalated": esc,
+        "auto_rate_percent": round(auto / total * 100, 1) if total else 0.0,
+        "recent": recent,
+        "storage": storage,
+        **agg,
+    }
 
 
 def _ping_redis() -> bool:
@@ -72,24 +126,11 @@ def get_stats() -> dict:
             total = int(r.get("stats:total") or 0)
             auto = int(r.get("stats:auto") or 0)
             esc = int(r.get("stats:escalated") or 0)
-            recent = [json.loads(x) for x in r.lrange("stats:log", 0, 49)]
-            return {
-                "total_queries": total,
-                "auto_answered": auto,
-                "escalated": esc,
-                "auto_rate_percent": round(auto / total * 100, 1) if total else 0.0,
-                "recent": recent,
-                "storage": "redis",
-            }
+            recent = [json.loads(x) for x in r.lrange("stats:log", 0, 499)]
+            return _build_stats(total, auto, esc, recent, "redis")
         except Exception:
             pass
 
     rate = round(_mem_auto / _mem_total * 100, 1) if _mem_total else 0.0
-    return {
-        "total_queries": _mem_total,
-        "auto_answered": _mem_auto,
-        "escalated": _mem_esc,
-        "auto_rate_percent": rate,
-        "recent": list(_mem_log)[:50],
-        "storage": "memory",
-    }
+    recent = list(_mem_log)[:500]
+    return _build_stats(_mem_total, _mem_auto, _mem_esc, recent, "memory")

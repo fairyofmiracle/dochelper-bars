@@ -43,6 +43,16 @@ async def lifespan(app: FastAPI):
     settings.upload_dir.mkdir(parents=True, exist_ok=True)
 
     try:
+        from app.llm.warmup import warmup_ollama
+        from app.rag.embedder import warmup_embedder
+
+        await asyncio.to_thread(warmup_embedder)
+        await asyncio.to_thread(warmup_ollama)
+        logger.info("Embedding + LLM warmup done")
+    except Exception as exc:
+        logger.warning("Model warmup skipped: %s", exc)
+
+    try:
         if settings.auto_index_on_start:
             info = collection_info()
             files = list_document_files(settings.docs_dir, settings.upload_dir)
@@ -53,15 +63,7 @@ async def lifespan(app: FastAPI):
     except Exception as exc:
         logger.warning("Auto-index skipped: %s", exc)
 
-    try:
-        from app.llm.warmup import warmup_ollama
-        from app.rag.embedder import warmup_embedder
-
-        await asyncio.to_thread(warmup_embedder)
-        await asyncio.to_thread(warmup_ollama)
-        logger.info("All models ready — accepting questions")
-    except Exception as exc:
-        logger.warning("Model warmup skipped: %s", exc)
+    logger.info("All models ready — accepting questions")
 
     tg_app = None
     if settings.telegram_enabled and settings.telegram_bot_token.strip():
