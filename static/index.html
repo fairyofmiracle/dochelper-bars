@@ -3,47 +3,103 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>DocHelper Барс</title>
+  <title>DocHelper · БАРС Груп</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
-  <header>
-    <h1>DocHelper Барс</h1>
-    <p>RAG-помощник по документации · порт 8026</p>
-    <nav>
-      <button class="tab active" data-tab="chat">Чат</button>
-      <button class="tab" data-tab="admin">Админка</button>
-      <button class="tab" data-tab="stats">Аналитика</button>
-    </nav>
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="bg-glow bg-glow--1" aria-hidden="true"></div>
+  <div class="bg-glow bg-glow--2" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="https://bars.group/" target="_blank" rel="noopener">
+        <img src="/static/bars-logo.svg" alt="БАРС Груп" class="brand-logo" width="88" height="28" />
+        <span class="brand-divider"></span>
+        <span class="brand-product">DocHelper</span>
+      </a>
+      <nav class="nav-tabs">
+        <button class="tab active" data-tab="chat">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Чат
+        </button>
+        <button class="tab" data-tab="admin">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Документы
+        </button>
+        <button class="tab" data-tab="stats">
+          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          Аналитика
+        </button>
+      </nav>
+    </div>
   </header>
 
-  <main>
+  <main class="site-main">
     <section id="chat" class="panel active">
-      <p class="hint chat-hint">Задайте вопрос — ответ придёт за несколько секунд с указанием источника в документации.</p>
-      <div id="messages"></div>
-      <div id="faq-chips" class="faq-chips"></div>
-      <form id="chat-form">
-        <input id="chat-input" placeholder="Задайте вопрос по документации…" autocomplete="off" />
-        <button type="submit">Отправить</button>
-        <button type="button" id="escalate-btn">Оператор</button>
-      </form>
+      <div class="hero">
+        <p class="hero-tag">Цифровые решения · RAG-поддержка</p>
+        <h1 class="hero-title">Виртуальный помощник<br /><span class="hero-accent">по документации</span></h1>
+        <p class="hero-desc">Ответы на основе корпоративной базы знаний с указанием источника и уровнем уверенности.</p>
+        <div class="tech-badges">
+          <span class="badge">RAG</span>
+          <span class="badge">Qdrant</span>
+          <span class="badge">GigaChat</span>
+          <span class="badge">Whisper</span>
+        </div>
+      </div>
+
+      <div class="chat-card glass">
+        <div id="messages" class="messages"></div>
+        <div id="faq-chips" class="faq-chips"></div>
+        <form id="chat-form" class="chat-form">
+          <div class="input-wrap">
+            <input id="chat-input" placeholder="Задайте вопрос по документации…" autocomplete="off" />
+          </div>
+          <button type="submit" class="btn btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            Отправить
+          </button>
+          <button type="button" id="escalate-btn" class="btn btn-outline">Оператор</button>
+        </form>
+      </div>
     </section>
 
     <section id="admin" class="panel">
-      <h2>Документы</h2>
-      <p class="hint">Загрузите .docx / .pdf / .md — файл будет проиндексирован в Qdrant.</p>
-      <form id="upload-form">
-        <input type="file" id="file-input" accept=".docx,.pdf,.md,.txt" />
-        <button type="submit">Загрузить</button>
-      </form>
-      <button id="reindex-btn">Переиндексировать всё</button>
-      <ul id="doc-list"></ul>
+      <div class="section-head">
+        <h2>Управление документами</h2>
+        <p class="hint">Загрузите .docx / .pdf / .md — файл будет проиндексирован в векторную базу Qdrant.</p>
+      </div>
+      <div class="glass card-block">
+        <form id="upload-form" class="upload-form">
+          <label class="file-label">
+            <input type="file" id="file-input" accept=".docx,.pdf,.md,.txt" />
+            <span class="file-btn">Выбрать файл</span>
+            <span class="file-name" id="file-name">Файл не выбран</span>
+          </label>
+          <button type="submit" class="btn btn-primary">Загрузить и проиндексировать</button>
+        </form>
+        <button id="reindex-btn" class="btn btn-secondary">Переиндексировать всё</button>
+        <ul id="doc-list" class="doc-list"></ul>
+      </div>
     </section>
 
     <section id="stats" class="panel">
-      <div id="stats-box">Загрузка…</div>
+      <div class="section-head">
+        <h2>Аналитика запросов</h2>
+        <p class="hint">Статистика автоответов, эскалаций и популярных тем.</p>
+      </div>
+      <div id="stats-box" class="stats-box glass">Загрузка…</div>
     </section>
   </main>
+
+  <footer class="site-footer">
+    <span>АО «БАРС Груп» · DocHelper · хакathon «Королева Кода»</span>
+    <a href="https://bars.group/" target="_blank" rel="noopener">bars.group</a>
+  </footer>
 
   <script src="/static/app.js"></script>
 </body>

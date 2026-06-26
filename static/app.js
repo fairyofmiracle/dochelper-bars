@@ -29,30 +29,46 @@ function setChatBusy(busy) {
 }
 
 function addMsg(text, role, meta = "", needsOperator = false, isLoading = false) {
-  const div = document.createElement("div");
-  div.className = "msg " + role + (isLoading ? " loading" : "");
-  div.textContent = text;
-  if (isLoading) div.dataset.loading = "1";
-  messages.appendChild(div);
+  const row = document.createElement("div");
+  row.className = "msg-row " + role + (isLoading ? " loading" : "");
+  if (isLoading) row.dataset.loading = "1";
+
+  const avatar = document.createElement("div");
+  avatar.className = "msg-avatar";
+  avatar.textContent = role === "user" ? "Вы" : "AI";
+
+  const body = document.createElement("div");
+  body.className = "msg-body";
+
+  const bubble = document.createElement("div");
+  bubble.className = "msg-bubble msg " + role;
+  bubble.textContent = text;
+  body.appendChild(bubble);
+
   if (meta) {
     const m = document.createElement("div");
-    m.className = "msg meta";
+    m.className = "msg-meta";
     m.textContent = meta;
-    messages.appendChild(m);
+    body.appendChild(m);
   }
+
+  row.appendChild(avatar);
+  row.appendChild(body);
+  messages.appendChild(row);
+
   if (needsOperator) {
-    const row = document.createElement("div");
-    row.className = "msg-actions";
+    const actions = document.createElement("div");
+    actions.className = "msg-actions";
     const btn = document.createElement("button");
     btn.type = "button";
-    btn.className = "inline-escalate";
+    btn.className = "btn inline-escalate";
     btn.textContent = "Переключить на оператора";
     btn.onclick = () => sendChat("оператор", true);
-    row.appendChild(btn);
-    messages.appendChild(row);
+    actions.appendChild(btn);
+    messages.appendChild(actions);
   }
   messages.scrollTop = messages.scrollHeight;
-  return div;
+  return row;
 }
 
 function removeLoadingEl(el) {
@@ -62,7 +78,7 @@ function removeLoadingEl(el) {
 async function sendChat(text, escalate = false) {
   addMsg(text, "user");
   setChatBusy(true);
-  const loadingEl = addMsg("✍️ Формирую ответ…", "bot", "", false, true);
+  const loadingEl = addMsg("Формирую ответ…", "bot", "", false, true);
 
   try {
     const res = await fetch("/api/chat", {
@@ -144,6 +160,12 @@ async function loadDocs() {
   }
 }
 
+document.getElementById("file-input").addEventListener("change", (e) => {
+  const nameEl = document.getElementById("file-name");
+  const file = e.target.files?.[0];
+  if (nameEl) nameEl.textContent = file ? file.name : "Файл не выбран";
+});
+
 document.getElementById("upload-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   const file = document.getElementById("file-input").files[0];
@@ -152,6 +174,7 @@ document.getElementById("upload-form").addEventListener("submit", async (e) => {
   fd.append("file", file);
   await fetch("/api/admin/upload", { method: "POST", body: fd });
   document.getElementById("file-input").value = "";
+  document.getElementById("file-name").textContent = "Файл не выбран";
   loadDocs();
   alert("Файл загружен и проиндексирован");
 });
@@ -182,7 +205,7 @@ async function loadStats() {
 
     const autoPct = s.total_queries ? (s.auto_answered / s.total_queries) * 100 : 0;
     const escPct = 100 - autoPct;
-    const donutStyle = `background: conic-gradient(#4caf82 0 ${autoPct}%, #c44 ${autoPct}% 100%)`;
+    const donutStyle = `background: conic-gradient(#10b981 0 ${autoPct}%, #ef4444 ${autoPct}% 100%)`;
 
     document.getElementById("stats-box").innerHTML = `
     <div class="stats-grid">
@@ -201,8 +224,8 @@ async function loadStats() {
         <div class="donut-wrap">
           <div class="donut" style="${donutStyle}" data-label="${s.auto_rate_percent}%"></div>
           <ul class="legend">
-            <li><span class="legend-dot" style="background:#4caf82"></span>Авто: ${s.auto_answered} (${autoPct.toFixed(0)}%)</li>
-            <li><span class="legend-dot" style="background:#c44"></span>Эскалация: ${s.escalated} (${escPct.toFixed(0)}%)</li>
+            <li><span class="legend-dot" style="background:#10b981"></span>Авто: ${s.auto_answered} (${autoPct.toFixed(0)}%)</li>
+            <li><span class="legend-dot" style="background:#ef4444"></span>Эскалация: ${s.escalated} (${escPct.toFixed(0)}%)</li>
           </ul>
         </div>
       </div>
@@ -279,8 +302,8 @@ function escapeHtml(s) {
 }
 
 addMsg(
-  "Здравствуйте! Я DocHelper Барс — виртуальный помощник по документации Барс Груп.\n\n" +
-    "Введите вопрос ниже или выберите тему. Если ответ не найден — нажмите «Оператор».",
+  "Здравствуйте! Я DocHelper — виртуальный помощник по документации АО «БАРС Груп».\n\n" +
+    "Задайте вопрос или выберите тему ниже. Ответ придёт с указанием источника. Если информации нет — нажмите «Оператор».",
   "bot"
 );
 

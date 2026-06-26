@@ -11,6 +11,27 @@ from app.config import settings
 
 logger = logging.getLogger(__name__)
 
+# Частые ошибки Whisper на CPU (бот/бой, БО, названия кейса)
+_DOMAIN_PROMPT = (
+    "БАРС-Офис, интерфейс бота, бизнес-процесс командировка, "
+    "реестр мебели, фильтр документа, DocHelper, Барс Груп"
+)
+_TERM_FIXES: tuple[tuple[str, str], ...] = (
+    ("интерфейс боя", "интерфейс бота"),
+    ("интерфейс бо ", "интерфейс бота "),
+    ("интерфейс бои", "интерфейс бота"),
+    ("интерфейс бо.", "интерфейс бота."),
+    ("интерфейс бо,", "интерфейс бота,"),
+    ("интерфейс бо?", "интерфейс бота?"),
+    ("бars", "барс"),
+    ("bars office", "барс-офис"),
+    ("bars офис", "барс-офис"),
+    ("бо ", "барс-офис "),
+    (" бo ", " барс-офис "),
+    ("командировки", "командировка"),
+    ("doc helper", "dochelper"),
+)
+
 _model = None
 _model_lock = threading.Lock()
 _whisper_available: bool | None = None
@@ -86,16 +107,32 @@ def transcribe_bytes(audio_bytes: bytes, suffix: str = ".ogg") -> str:
         Path(path).unlink(missing_ok=True)
 
 
+def _fix_domain_terms(text: str) -> str:
+    lower = text.lower()
+    fixed = text
+    for wrong, right in _TERM_FIXES:
+        if wrong in lower:
+            # сохраняем регистр начала фразы грубо через replace по lower
+            idx = lower.find(wrong)
+            while idx != -1:
+                fixed = fixed[:idx] + right + fixed[idx + len(wrong) :]
+                lower = fixed.lower()
+                idx = lower.find(wrong, idx + len(right))
+    return fixed.strip()
+
+
 def transcribe_file(path: str) -> str:
     model = _get_model()
     segments, _ = model.transcribe(
         path,
         language="ru",
-        beam_size=1,
+        beam_size=3,
         vad_filter=True,
+        initial_prompt=_DOMAIN_PROMPT,
     )
     parts = [s.text.strip() for s in segments if s.text.strip()]
-    return " ".join(parts).strip()
+    text = " ".join(parts).strip()
+    return _fix_domain_terms(text)
 
 
 def warmup_whisper() -> None:
