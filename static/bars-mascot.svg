@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
+  <defs>
+    <linearGradient id="g" x1="20" y1="10" x2="100" y2="110" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0084FF"/>
+      <stop offset="1" stop-color="#00C2FF"/>
+    </linearGradient>
+  </defs>
+  <circle cx="60" cy="60" r="54" fill="url(#g)" opacity="0.15"/>
+  <circle cx="60" cy="62" r="38" fill="url(#g)"/>
+  <ellipse cx="60" cy="68" rx="22" ry="18" fill="#fff" opacity="0.95"/>
+  <circle cx="48" cy="58" r="5" fill="#0a1020"/>
+  <circle cx="72" cy="58" r="5" fill="#0a1020"/>
+  <circle cx="49" cy="57" r="1.5" fill="#fff"/>
+  <circle cx="73" cy="57" r="1.5" fill="#fff"/>
+  <path d="M48 74c4 5 20 5 24 0" stroke="#0a1020" stroke-width="2.5" stroke-linecap="round"/>
+  <rect x="38" y="18" width="44" height="14" rx="7" fill="#0084FF"/>
+  <text x="60" y="28" text-anchor="middle" font-family="Manrope, Arial, sans-serif" font-size="8" font-weight="700" fill="#fff"> !</text>
+  <path d="M28 52c-8-2-12 6-8 12 2-8 10-10 16-8" fill="#0066CC"/>
+  <path d="M92 52c8-2 12 6 8 12-2-8-10-10-16-8" fill="#0066CC"/>
+</svg>

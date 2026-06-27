@@ -45,6 +45,7 @@ services:
       REDIS_URL: redis://redis:6379/0
       OLLAMA_BASE_URL: http://ollama:11434
       HF_HOME: /cache/huggingface
+      DATA_ROOT: /cache
       TELEGRAM_ENABLED: "true"
     volumes:
       - ./app:/app/app
@@ -53,6 +54,7 @@ services:
       - ./data/docs:/app/data/docs
       - ./data/uploads:/app/data/uploads
       - ${DATA_ROOT}/huggingface:/cache/huggingface
+      - ${DATA_ROOT}/doc-images:/cache/doc-images
     depends_on:
       - qdrant
       - redis
