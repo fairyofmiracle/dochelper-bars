@@ -119,19 +119,6 @@ async function loadStatus() {
       : "Qdrant: пусто — загрузите документы";
     const waiting = queueItems.filter((q) => q.status === "waiting").length;
     document.getElementById("status-queue").textContent = `В очереди: ${waiting}`;
-    const tgEl = document.getElementById("status-telegram");
-    if (tgEl) {
-      if (h.telegram_running) {
-        tgEl.textContent = "Telegram: работает";
-        tgEl.className = "status-pill status-pill--ok";
-      } else if (h.telegram_token_set) {
-        tgEl.textContent = "Telegram: не запущен";
-        tgEl.className = "status-pill status-pill--warn";
-      } else {
-        tgEl.textContent = "Telegram: не настроен";
-        tgEl.className = "status-pill status-pill--muted";
-      }
-    }
   } catch {
     document.getElementById("status-online").className = "status-pill status-pill--err";
     document.getElementById("status-online").textContent = "● Офлайн";

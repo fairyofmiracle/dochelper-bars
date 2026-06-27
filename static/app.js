@@ -313,7 +313,7 @@ document.getElementById("welcome-start")?.addEventListener("click", closeWelcome
     ]);
   } catch {
     intro = {
-      tag: "Королева Кода · АО «Барс Групп»",
+      tag: "Королева Кода · АО «Барс Груп»",
       title: "DocHelper",
       title_accent: "Барс",
       lead: "AI-агент первой линии поддержки — отвечает по корпоративной документации и показывает источник ответа.",

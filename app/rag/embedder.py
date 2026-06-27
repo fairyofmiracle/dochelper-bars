@@ -8,6 +8,7 @@ from pathlib import Path
 import httpx
 
 from app.config import settings
+from app.llm.ollama_http import ollama_embed_base
 
 logger = logging.getLogger(__name__)
 
@@ -92,7 +93,7 @@ def embed_query(query: str) -> list[float]:
 
 
 def _ollama_embed(text: str) -> list[float]:
-    base = settings.ollama_base_url.rstrip("/")
+    base = ollama_embed_base()
     payload = {"model": settings.embed_model, "input": text}
     with httpx.Client(timeout=120.0) as client:
         r = client.post(f"{base}/api/embed", json=payload)

@@ -21,3 +21,10 @@ def ollama_get(url: str, **kwargs) -> httpx.Response:
 def ollama_post(url: str, **kwargs) -> httpx.Response:
     with httpx.Client(timeout=kwargs.pop("timeout", 180.0), headers=ollama_headers()) as client:
         return client.post(url, **kwargs)
+
+
+def ollama_embed_base() -> str:
+    embed = settings.ollama_embed_url.strip()
+    if embed:
+        return embed.rstrip("/")
+    return settings.ollama_base_url.rstrip("/")

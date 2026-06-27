@@ -27,7 +27,7 @@ def welcome_message() -> str:
 # ── Вступительное окно Web-чата (до кнопки «Начать диалог») ──
 # Редактируйте тексты здесь — они подтягиваются в static/index.html через /api/web-welcome
 
-WEB_WELCOME_TAG = "Королева Кода · АО «Барс Групп»"
+WEB_WELCOME_TAG = "Королева Кода · АО «Барс Груп»"
 WEB_WELCOME_TITLE = "DocHelper"
 WEB_WELCOME_TITLE_ACCENT = "Барс"
 WEB_WELCOME_LEAD = (

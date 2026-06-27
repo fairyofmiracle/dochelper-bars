@@ -1,6 +1,6 @@
 # DocHelper Барс
 
-Telegram + Web RAG-бот — кейс **АО «Барс Групп»**, хакатон **«Королева Кода»** (команда **one_commit**).
+Telegram + Web RAG-бот — кейс **АО «Барс Груп»**, хакатон **«Королева Кода»** (команда **one_commit**).
 
 📄 **[SUBMISSION.md](SUBMISSION.md)** — материалы для сдачи (описание, технологии, AI-раскрытие)  
 📊 **[PRESENTATION.md](PRESENTATION.md)** · 🎤 **[SPEECH.md](SPEECH.md)** — слайды и речь
@@ -98,7 +98,7 @@ scripts/       — ingest, test_brief_cases, start_local
 ## Коммит для хакатона (пример сообщения)
 
 ```
-feat: DocHelper Барс — RAG-бот первой линии поддержки для кейса Барс Групп
+feat: DocHelper Барс — RAG-бот первой линии поддержки для кейса Барс Груп
 
 Telegram + Web, GigaChat/Ollama, Qdrant, эскалация, аналитика, Whisper для голосовых.
 Хакатон «Королева Кода», команда one_commit.
