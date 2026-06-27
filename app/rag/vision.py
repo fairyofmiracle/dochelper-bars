@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import base64
 import logging
+import re
+from dataclasses import dataclass
 
 import httpx
 
@@ -18,9 +20,28 @@ DOC_PROMPT = (
 
 USER_PROMPT = (
     "Пользователь прислал скриншот или фото, связанное с корпоративной системой (БАРС-Офис, "
-    "документооборот, бизнес-процессы). Опиши на русском, что видно: интерфейс, ошибки, "
-    "кнопки, поля, текст на экране. Кратко и по делу."
+    "документооборот, бизнес-процессы). Опиши на русском:\n"
+    "1) Тип: интерфейс / ошибка / схема / документ / другое\n"
+    "2) Что видно: окна, кнопки, поля, текст на экране, коды ошибок\n"
+    "3) Ключевые слова для поиска в документации\n"
+    "Кратко, без выдумок."
 )
+
+IMAGE_TYPE_LABELS = {
+    "ui": "Интерфейс системы",
+    "error": "Ошибка на экране",
+    "diagram": "Схема / блок-схема",
+    "document": "Документ / таблица",
+    "other": "Изображение",
+}
+
+
+@dataclass
+class ImageAnalysis:
+    description: str
+    image_type: str
+    search_query: str
+    type_label: str
 
 
 def vision_ready() -> bool:
@@ -36,6 +57,65 @@ def describe_image(image_bytes: bytes, source: str, image_name: str) -> str:
         )
     return _ollama_vision(image_bytes, DOC_PROMPT) or (
         f"[Изображение {image_name} в {source}]"
+    )
+
+
+def classify_image_description(desc: str) -> str:
+    low = desc.lower()
+    if any(w in low for w in ("ошибк", "error", "exception", "fatal", "не удалось", "failed")):
+        return "error"
+    if any(w in low for w in ("схем", "блок-схем", "diagram", "стрелк", "бп ", "процесс")):
+        return "diagram"
+    if any(w in low for w in ("таблиц", "документ", "pdf", "реестр", "список")):
+        return "document"
+    if any(
+        w in low
+        for w in (
+            "интерфейс",
+            "кнопк",
+            "окно",
+            "форма",
+            "меню",
+            "вкладк",
+            "поле",
+            "экран",
+            "барс",
+            "фильтр",
+        )
+    ):
+        return "ui"
+    return "other"
+
+
+def extract_search_query(desc: str, caption: str = "") -> str:
+    parts: list[str] = []
+    if caption.strip():
+        parts.append(caption.strip())
+    for line in desc.splitlines():
+        low = line.lower()
+        if "ключев" in low or "поиск" in low:
+            parts.append(re.sub(r"^[\d\.\)\-\*]+\s*", "", line).strip())
+    quoted = re.findall(r"[«\"']([^»\"']{3,80})[»\"']", desc)
+    parts.extend(quoted[:3])
+    if not parts:
+        sentences = re.split(r"[.!?]\s+", desc)
+        if sentences:
+            parts.append(sentences[0][:200])
+    query = " ".join(parts)
+    query = re.sub(r"\s+", " ", query).strip()
+    return query[:400] if query else desc[:200]
+
+
+def analyze_user_image(image_bytes: bytes, caption: str = "") -> ImageAnalysis | None:
+    desc = describe_user_image(image_bytes)
+    if not desc or desc.startswith("["):
+        return None
+    image_type = classify_image_description(desc)
+    return ImageAnalysis(
+        description=desc,
+        image_type=image_type,
+        search_query=extract_search_query(desc, caption),
+        type_label=IMAGE_TYPE_LABELS.get(image_type, IMAGE_TYPE_LABELS["other"]),
     )
 
 

@@ -12,9 +12,10 @@ from app.branding import welcome_message
 from app.config import settings, telegram_proxy_url
 from app.rag.image_store import resolve_doc_image
 from app.rag.vision import vision_ready
+from app.services.analytics import record_rate_limit
 from app.services.chat_async import ask_async, ask_from_image_async
-from app.services.escalation import notify_support
-from app.services.escalation_queue import enqueue
+from app.services.escalation_flow import escalate_session
+from app.services.rate_limit import check_rate_limit, rate_limit_message
 from app.services.session import append_message
 from app.services.speech import transcribe_bytes, whisper_ready
 
@@ -125,6 +126,15 @@ async def _process_question(update: Update, context: ContextTypes.DEFAULT_TYPE, 
         stop_typing = asyncio.Event()
         typing_task = None
 
+        rl = check_rate_limit(sid, question)
+        if not rl.allowed:
+            record_rate_limit(sid, question)
+            msg = rate_limit_message(rl)
+            append_message(sid, "user", question)
+            append_message(sid, "assistant", msg)
+            await _send_result(update, msg, False)
+            return
+
         if message:
             status_msg = await message.reply_text(STATUS_LLM)
             typing_task = asyncio.create_task(_keep_typing(message.chat, stop_typing))
@@ -154,8 +164,7 @@ async def _process_question(update: Update, context: ContextTypes.DEFAULT_TYPE, 
         if result.escalated:
             user = update.effective_user
             label = user.full_name if user else "unknown"
-            await notify_support(sid, label, question)
-            enqueue(sid, label, question)
+            await escalate_session(sid, label, question)
 
         await _send_result(
             update,
@@ -259,6 +268,16 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         )
         return
 
+    rate_text = caption or "[фото]"
+    rl = check_rate_limit(sid, rate_text)
+    if not rl.allowed:
+        record_rate_limit(sid, rate_text)
+        msg = rate_limit_message(rl)
+        append_message(sid, "user", f"[фото] {caption or 'скриншот'}")
+        append_message(sid, "assistant", msg)
+        await message.reply_text(msg, reply_markup=MAIN_KEYBOARD)
+        return
+
     status = await message.reply_text("🖼 Анализирую изображение…")
     async with _user_lock(sid):
         try:
@@ -277,8 +296,7 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         append_message(sid, "assistant", result.answer)
         if result.escalated:
             user = update.effective_user
-            await notify_support(sid, user.full_name if user else "unknown", caption or "[фото]")
-            enqueue(sid, user.full_name if user else "unknown", caption or "[фото]")
+            await escalate_session(sid, user.full_name if user else "unknown", caption or "[фото]")
 
         await _send_result(
             update,
@@ -340,8 +358,7 @@ async def operator_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         append_message(sid, "user", BTN_OPERATOR)
         result = await ask_async("оператор", force_escalate=True)
         user = update.effective_user
-        await notify_support(sid, user.full_name if user else "unknown")
-        enqueue(sid, user.full_name if user else "unknown", BTN_OPERATOR)
+        await escalate_session(sid, user.full_name if user else "unknown", BTN_OPERATOR)
         await _send_result(update, result.answer, False)
 
 
@@ -354,8 +371,7 @@ async def callback_escalate(update: Update, context: ContextTypes.DEFAULT_TYPE) 
         append_message(sid, "user", BTN_OPERATOR)
         result = await ask_async("оператор", force_escalate=True)
         user = update.effective_user
-        await notify_support(sid, user.full_name if user else "unknown")
-        enqueue(sid, user.full_name if user else "unknown", BTN_OPERATOR)
+        await escalate_session(sid, user.full_name if user else "unknown", BTN_OPERATOR)
         if query.message:
             await query.message.reply_text(result.answer, reply_markup=MAIN_KEYBOARD)
         else:

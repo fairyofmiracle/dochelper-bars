@@ -10,7 +10,7 @@ from app.config import ESCALATION_WORDS, settings
 from app.llm.client import generate_answer
 from app.rag.image_store import image_api_url
 from app.rag.search import SearchHit, best_confidence, search
-from app.rag.vision import describe_user_image, vision_ready
+from app.rag.vision import analyze_user_image, vision_ready
 from app.services.analytics import record_query
 
 VISUAL_KEYWORDS = (
@@ -55,6 +55,8 @@ class ChatResult:
     images: list[str] = field(default_factory=list)
     source_snippets: list[SourceSnippet] = field(default_factory=list)
     user_question: str = ""
+    image_type: str = ""
+    image_preview: str = ""
 
 
 LOW_CONFIDENCE_MSG = _LOW_CONFIDENCE_MSG
@@ -138,7 +140,7 @@ def _polish_answer(answer: str) -> str:
         cleaned = re.sub(r"^[📋📝💡📎]\s*", "", line.strip())
         cleaned = re.sub(r"\*\*(.+?)\*\*", r"\1", cleaned)
         cleaned = re.sub(
-            r"^(краткий ответ|подробности|важно)\s*[—\-:]\s*",
+            r"^(краткий ответ|коротко|подробности|важно|вот как это устроено)\s*[—\-:]\s*",
             "",
             cleaned,
             flags=re.IGNORECASE,
@@ -215,8 +217,8 @@ def ask_from_image(image_bytes: bytes, caption: str = "") -> ChatResult:
             True,
         )
 
-    desc = describe_user_image(image_bytes)
-    if not desc or desc.startswith("["):
+    analysis = analyze_user_image(image_bytes, caption)
+    if not analysis:
         return ChatResult(
             "Не удалось распознать изображение. Опишите вопрос текстом или нажмите «Оператор».",
             0.0,
@@ -226,10 +228,25 @@ def ask_from_image(image_bytes: bytes, caption: str = "") -> ChatResult:
         )
 
     user_q = caption.strip() or "Что на скриншоте и как это связано с документацией?"
-    combined = f"{user_q}\n\n[Распознано на изображении пользователя]\n{desc}"
+    search_q = analysis.search_query or user_q
+    combined = (
+        f"{user_q}\n\n"
+        f"[Тип изображения: {analysis.type_label}]\n"
+        f"[Распознано на изображении пользователя]\n{analysis.description}"
+    )
     result = ask(combined)
-    preview = desc if len(desc) <= 300 else desc[:297] + "…"
-    result.answer = f"Распознано на вашем изображении:\n{preview}\n\n---\n\n{result.answer}"
+    if analysis.search_query and analysis.search_query != user_q:
+        alt = ask(search_q)
+        if alt.confidence > result.confidence:
+            result = alt
+
+    preview = analysis.description if len(analysis.description) <= 300 else analysis.description[:297] + "…"
+    result.answer = (
+        f"Определено: {analysis.type_label}\n\n"
+        f"Распознано на вашем изображении:\n{preview}\n\n---\n\n{result.answer}"
+    )
+    result.image_type = analysis.image_type
+    result.image_preview = preview
     if not result.user_question:
         result.user_question = user_q
     return result

@@ -118,6 +118,7 @@
     .stat-pill--blue { background: rgba(0,132,255,0.15); color: var(--cyan); border-color: rgba(0,132,255,0.35); }
     .stat-pill--green { background: rgba(16,185,129,0.15); color: var(--green); border-color: rgba(16,185,129,0.35); }
     .stat-pill--purple { background: rgba(139,92,246,0.15); color: #c4b5fd; border-color: rgba(139,92,246,0.35); }
+    .stat-pill--amber { background: rgba(245,158,11,0.15); color: var(--amber); border-color: rgba(245,158,11,0.35); }
 
     /* QR slide */
     .qr-grid {
@@ -139,6 +140,137 @@
       color: var(--muted); line-height: 1.45;
     }
     .pain-card strong { color: #fca5a5; display: block; margin-bottom: 0.2rem; font-size: 0.82rem; }
+    .slide--case {
+      align-items: center;
+      text-align: center;
+      justify-content: center;
+    }
+    .slide--case h2 { margin-bottom: 0.5rem; }
+    .slide--case .case-lead {
+      max-width: 640px;
+      margin: 0 auto 1.75rem;
+      font-size: 1.08rem;
+      color: var(--muted);
+    }
+    .slide--case .pain-grid {
+      max-width: 880px;
+      width: 100%;
+      gap: 1rem;
+      margin: 0 auto;
+    }
+    .slide--case .pain-card {
+      padding: 1.35rem 1.4rem;
+      font-size: 1.02rem;
+      line-height: 1.5;
+      text-align: left;
+    }
+    .slide--case .pain-card strong { font-size: 0.95rem; margin-bottom: 0.45rem; }
+    .arch-flow-main { justify-content: center; flex-wrap: wrap; margin: 1rem 0; }
+    .arch-flow-main .flow-node { padding: 0.55rem 1rem; font-size: 0.9rem; }
+    .arch-flow-main .flow-node--answer {
+      border-color: var(--green);
+      background: rgba(16,185,129,0.12);
+      color: var(--green);
+    }
+    .arch-note-row {
+      display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center;
+      margin-top: 0.75rem; opacity: 0.85;
+    }
+    .arch-note {
+      font-size: 0.78rem; color: var(--muted); padding: 0.4rem 0.75rem;
+      border-radius: 999px; border: 1px solid var(--border); background: rgba(0,0,0,0.2);
+    }
+    .solution-compact {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;
+      max-width: 900px; margin: 0 auto 0.85rem; text-align: left;
+    }
+    .solution-compact-item {
+      padding: 0.55rem 0.75rem; border-radius: 10px; font-size: 0.82rem; line-height: 1.4;
+      background: rgba(0,132,255,0.08); border: 1px solid rgba(0,132,255,0.25); color: var(--muted);
+    }
+    .solution-compact-item strong { color: var(--text); display: block; font-size: 0.78rem; margin-bottom: 0.15rem; }
+    .slide--solution { align-items: center; text-align: center; }
+    .slide--solution .slide-lead { max-width: 640px; margin: 0 auto 0.75rem; font-size: 0.95rem; color: var(--muted); }
+    .solution-split {
+      display: grid; grid-template-columns: minmax(240px, 300px) 1fr; gap: 1.25rem;
+      align-items: center; max-width: 920px; width: 100%; margin: 0 auto; text-align: left;
+    }
+    .solution-visual img {
+      width: 100%; height: auto; display: block; border-radius: 14px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+    }
+    .value-stack { display: flex; flex-direction: column; gap: 0.65rem; }
+    .value-box {
+      padding: 0.75rem 0.9rem; border-radius: 12px; font-size: 0.84rem; line-height: 1.45;
+    }
+    .value-box h3 { margin: 0 0 0.4rem; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .value-box ul { margin: 0; padding-left: 1.1rem; color: var(--muted); }
+    .value-box li { margin: 0.2rem 0; }
+    .value-box--before { background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.28); }
+    .value-box--before h3 { color: #fca5a5; }
+    .value-box--after { background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.35); }
+    .value-box--after h3 { color: var(--green); }
+    .demo-split { display: grid; grid-template-columns: 1fr 1.1fr; gap: 1.25rem; align-items: start; margin-top: 0.5rem; }
+    .demo-video-wrap {
+      border-radius: 16px; overflow: hidden; border: 1px solid var(--border);
+      background: rgba(0,0,0,0.35); aspect-ratio: 16/10; max-height: 280px;
+    }
+    .demo-video-wrap video { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .demo-video-placeholder {
+      display: flex; align-items: center; justify-content: center; height: 100%; min-height: 180px;
+      padding: 1rem; text-align: center; font-size: 0.82rem; color: var(--muted); line-height: 1.45;
+    }
+    .demo-video-placeholder.hidden { display: none; }
+    .metrics-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.5rem; }
+    .metrics-split {
+      display: grid; grid-template-columns: minmax(260px, 340px) 1fr; gap: 1.25rem;
+      align-items: center; max-width: 880px; width: 100%; margin: 0.75rem auto 0; text-align: left;
+    }
+    .metrics-visual img {
+      width: 100%; height: auto; display: block; border-radius: 14px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+    }
+    .metrics-compact { display: flex; flex-direction: column; gap: 0.65rem; }
+    .metrics-lead { font-size: 1.05rem; margin: 0; color: var(--text); line-height: 1.45; }
+    .metrics-note { font-size: 0.85rem; color: var(--muted); margin: 0; }
+    .metrics-block {
+      background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+      padding: 0.85rem 1rem; text-align: left;
+    }
+    .metrics-block h3 { margin: 0 0 0.5rem; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--cyan); }
+    .metrics-block ul { margin: 0; padding-left: 1.1rem; font-size: 0.82rem; line-height: 1.45; }
+    .metrics-block li { margin: 0.25rem 0; }
+    .metrics-highlight { font-size: 2rem; font-weight: 800; color: var(--green); line-height: 1.1; }
+    .metrics-sub { font-size: 0.78rem; color: var(--muted); margin-top: 0.25rem; }
+    .export-row { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.45rem; }
+    .export-tag {
+      font-size: 0.72rem; padding: 0.25rem 0.55rem; border-radius: 999px;
+      border: 1px solid var(--border); background: rgba(0,0,0,0.25); color: var(--muted);
+    }
+    .roadmap-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.65rem; }
+    .roadmap-block { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 0.85rem 1rem; text-align: left; }
+    .roadmap-block h3 { margin: 0 0 0.55rem; font-size: 0.9rem; color: var(--text); }
+    .roadmap-block ul { margin: 0; padding-left: 1.1rem; font-size: 0.82rem; line-height: 1.5; color: var(--muted); }
+    .roadmap-block li { margin: 0.2rem 0; }
+    .roadmap-block--done { border-color: rgba(16,185,129,0.35); }
+    .roadmap-block--next { border-color: rgba(139,92,246,0.35); }
+    .slide--arch { align-items: center; text-align: center; }
+    .slide--arch .arch-diagram {
+      width: min(920px, 96vw); max-height: 52vh; margin: 0.5rem auto;
+      border-radius: 16px; border: 1px solid var(--border); background: rgba(0,0,0,0.25);
+      padding: 0.5rem;
+    }
+    .slide--arch .arch-diagram img,
+    .slide--arch .arch-diagram object { width: 100%; height: auto; display: block; max-height: 48vh; }
+    .arch-legend {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.45rem;
+      max-width: 900px; width: 100%; margin: 0.65rem auto 0; text-align: left;
+    }
+    .arch-legend-item {
+      font-size: 0.78rem; color: var(--muted); padding: 0.45rem 0.6rem;
+      border-radius: 8px; border: 1px solid var(--border); background: rgba(0,0,0,0.2);
+    }
+    .arch-legend-item strong { color: var(--text); display: block; font-size: 0.8rem; }
     .quote-box {
       margin-top: 0.75rem; padding: 0.85rem 1rem; border-radius: 12px; font-style: italic;
       background: rgba(0,0,0,0.35); border-left: 3px solid var(--red); font-size: 0.92rem; color: var(--text-secondary, #cbd5e1);
@@ -222,7 +354,7 @@
     a { color: var(--cyan); text-decoration: none; }
     a:hover { text-decoration: underline; }
     @media (max-width: 900px) {
-      .split, .qr-grid, .team-grid, .agents, .pain-grid, .goals-grid { grid-template-columns: 1fr; }
+      .split, .qr-grid, .team-grid, .agents, .pain-grid, .goals-grid, .solution-compact, .solution-split, .demo-split, .metrics-cols, .metrics-split, .roadmap-cols, .arch-legend { grid-template-columns: 1fr; }
       .slide { padding: 1.5rem; }
     }
     /* Печать / PDF: Ctrl+P → «Сохранить как PDF» */
@@ -251,195 +383,177 @@
 
   <div class="deck" id="deck">
 
-    <!-- 1. QR — войти в demo -->
-    <section class="slide slide--center active" data-title="Войти в demo">
-      <span class="tag">Сканируйте · попробуйте сами</span>
-      <h1>Попробуйте <span class="accent">DocHelper</span></h1>
-      <p style="margin-bottom:1.25rem">Telegram-бот и web-чат — попробуйте прямо с телефона</p>
-      <div class="qr-grid">
-        <div class="qr-card qr-card--bot">
-          <div class="qr-wrap qr-wrap--img">
-            <img src="/static/presentation/qr-telegram.png" alt="QR Telegram @SUP_BARS_BOT" />
-          </div>
-          <h3>Telegram-бот</h3>
-          <p id="link-bot"><a href="https://t.me/SUP_BARS_BOT" target="_blank">@SUP_BARS_BOT</a></p>
-        </div>
-        <div class="qr-card qr-card--web">
-          <div class="qr-wrap qr-wrap--img">
-            <img src="/static/presentation/qr-web.png" alt="QR Web-чат" />
-          </div>
-          <h3>Web-чат</h3>
-          <p id="link-web"><a href="http://139.100.227.156:8026/" target="_blank">http://139.100.227.156:8026/</a></p>
-        </div>
-      </div>
-    </section>
-
-    <!-- 2. Титул -->
-    <section class="slide" data-title="Титул">
-      <span class="tag">Королева Кода · Барс Груп</span>
-      <div class="logo-row">
+    <!-- 1. Титул + команда + QR -->
+    <section class="slide active" data-title="DocHelper · команда">
+      <span class="tag">Королева Кода · АО «Барс Груп» · one_commit</span>
+      <div class="split">
         <div>
           <h1><span class="accent">DocHelper</span></h1>
-          <p style="font-size:1.2rem;color:var(--text)">AI-агент первой линии поддержки</p>
-          <p style="margin-top:0.5rem;color:var(--muted)">Кейс АО «Барс Груп» · команда <strong style="color:var(--text)">one_commit</strong></p>
-          <div>
+          <p style="font-size:1.15rem;color:var(--text);margin:0 0 0.75rem">AI-агент первой линии поддержки · RAG по корпоративной документации</p>
+          <div style="margin-bottom:0.85rem">
             <span class="stat-pill stat-pill--green">94% авто</span>
-            <span class="stat-pill stat-pill--blue">RAG + 6 агентов</span>
+            <span class="stat-pill stat-pill--blue">6 AI-агентов</span>
             <span class="stat-pill stat-pill--purple">Telegram + Web</span>
           </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 3. Боль -->
-    <section class="slide" data-title="Боль">
-      <div class="split">
-        <div>
-          <h2>Боль заказчика</h2>
-          <p><strong style="color:var(--text)">Поддержка перегружена — ответы уже есть в документации</strong></p>
-          <div class="pain-grid">
-            <div class="pain-card"><strong>Объём docs</strong>4 файла кейса — сотни страниц, постоянные обновления</div>
-            <div class="pain-card"><strong>Не ищут сами</strong>«Как фильтр?» «Кто согласует командировку?» — пишут оператору</div>
-            <div class="pain-card"><strong>Ночью и в пик</strong>вопросы висят до утра · релизы заваливают линию</div>
-            <div class="pain-card"><strong>Оператор = копипаст</strong>одни и те же ссылки из PDF вместо сложных кейсов</div>
+          <p style="font-size:0.88rem;margin-bottom:0.5rem"><strong style="color:var(--text)">Команда one_commit</strong></p>
+          <div style="display:flex;flex-wrap:wrap;gap:0.4rem">
+            <span class="stat-pill stat-pill--blue">Backend · RAG</span>
+            <span class="stat-pill stat-pill--green">Web · оператор</span>
+            <span class="stat-pill stat-pill--purple">Telegram</span>
+            <span class="stat-pill stat-pill--amber">Demo · защита</span>
           </div>
-          <div class="quote-box">«Как сбросить пароль?», «Где календарь в БО?», «Что делать новичку?» — оператор отвечает часами</div>
-        </div>
-        <div class="illus">
-          <img src="/static/presentation/ill-problem.svg" alt="Перегруз" />
-        </div>
-      </div>
-    </section>
-
-    <!-- 4. Бизнес-цели -->
-    <section class="slide" data-title="Бизнес-цели">
-      <h2>Бизнес-цели брифа</h2>
-      <div class="goals-grid">
-        <div class="goal-card" style="--c:var(--blue)">
-          <strong>Разгрузить поддержку</strong>
-          <span>≥ 40% тикетов первой линии — на автомат</span>
-          <span class="goal-metric">94%</span>
-          <span>на 17 тест-кейсах заказчика</span>
-        </div>
-        <div class="goal-card" style="--c:var(--green)">
-          <strong>CSAT и скорость</strong>
-          <span>Ответ за секунды, не за часы · с первого обращения</span>
-          <span class="goal-metric">1–2 сек</span>
-          <span>среднее время ответа</span>
-        </div>
-        <div class="goal-card" style="--c:var(--purple)">
-          <strong>Масштаб без штата</strong>
-          <span>Рост базы пользователей без роста линии поддержки</span>
-          <span class="goal-metric">24/7</span>
-          <span>бот + эскалация оператору</span>
-        </div>
-      </div>
-      <p style="margin-top:1rem"><strong style="color:var(--text)">Аудитория:</strong> пользователи БАРС-Офис · новички · менеджеры · офис-менеджеры</p>
-    </section>
-
-    <!-- 5. Решение -->
-    <section class="slide" data-title="Решение">
-      <div class="split">
-        <div class="illus">
-          <img src="/static/presentation/ill-solution.svg" alt="Чат с ботом" />
         </div>
         <div>
-          <h2>Наше решение</h2>
-          <p><strong style="color:var(--text)">DocHelper — первая линия с RAG</strong></p>
-          <ol class="solution-steps">
-            <li>Пользователь пишет <strong style="color:var(--text)">как живому оператору</strong> — текст, голос, скриншот</li>
-            <li>Бот понимает контекст, опечатки, неформальные формулировки</li>
-            <li>Ищет в docx/pdf · ответ + <strong style="color:var(--text)">цитата + источник + скачать</strong></li>
-            <li>Низкая уверенность → кнопка «Оператор» · история сохранена</li>
-          </ol>
+          <p style="text-align:center;margin-bottom:0.75rem;color:var(--text)"><strong>Попробуйте live</strong></p>
+          <div class="qr-grid" style="max-width:100%;gap:0.85rem">
+            <div class="qr-card qr-card--bot">
+              <div class="qr-wrap qr-wrap--img"><img data-pres="qr-telegram.png" alt="QR Telegram" /></div>
+              <h3>Telegram</h3>
+              <p id="link-bot"><a href="https://t.me/SUP_BARS_BOT" target="_blank">@SUP_BARS_BOT</a></p>
+            </div>
+            <div class="qr-card qr-card--web">
+              <div class="qr-wrap qr-wrap--img"><img data-pres="qr-web.png" alt="QR Web" /></div>
+              <h3>Web-чат</h3>
+              <p id="link-web"><a href="http://139.100.227.156:8026/" target="_blank">139.100.227.156:8026</a></p>
+            </div>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- 6. Архитектура и закрытый контур -->
-    <section class="slide" data-title="Архитектура">
-      <h2>Архитектура · закрытый контур</h2>
-      <p style="margin-bottom:0.75rem"><strong style="color:var(--green)">Требование брифа:</strong> MML AI работает без интернета — данные не уходят наружу</p>
-      <div class="illus illus--wide" style="margin-bottom:0.75rem">
-        <img src="/static/presentation/ill-arch.svg" alt="Закрытый контур" />
+    <!-- 2. Кейс Барс Груп -->
+    <section class="slide slide--case" data-title="Кейс Барс Груп">
+      <h2>Кейс АО «Барс Груп»</h2>
+      <p class="case-lead"><strong style="color:var(--text)">БАРС-Офис и корпоративные сервисы</strong> — первая линия тонет в однотипных вопросах, ответы уже в документации</p>
+      <div class="pain-grid">
+        <div class="pain-card"><strong>Объём docs</strong>Сотни страниц, постоянные обновления</div>
+        <div class="pain-card"><strong>Не ищут сами</strong>«Фильтр?» «Командировка?» — пишут оператору</div>
+        <div class="pain-card"><strong>Ночью и в пик</strong>Вопросы висят до утра</div>
+        <div class="pain-card"><strong>Оператор = копипаст</strong>Одни и те же ссылки из PDF</div>
       </div>
-      <div class="goals-grid" style="grid-template-columns:1fr 1fr 1fr">
-        <div class="goal-card" style="--c:var(--green)">
-          <strong>Продакшен</strong>
-          <span>Ollama + e5 + Qdrant + Whisper + Redis</span>
+    </section>
+
+    <!-- 3. Архитектура — схема (отдельный слайд) -->
+    <section class="slide slide--arch" data-title="Архитектура">
+      <h2>Архитектура DocHelper</h2>
+      <div class="arch-diagram">
+        <img id="ill-arch-img" data-pres="ill-arch.svg" alt="Схема архитектуры DocHelper" />
+      </div>
+      <div class="arch-legend">
+        <div class="arch-legend-item"><strong>Telegram / Web</strong>Каналы пользователя</div>
+        <div class="arch-legend-item"><strong>Orchestrator</strong>FastAPI координирует 6 агентов</div>
+        <div class="arch-legend-item"><strong>Qdrant + e5</strong>Семантический поиск по docx</div>
+        <div class="arch-legend-item"><strong>LLM → Ответ</strong>Ollama (prod) или GigaChat (demo)</div>
+        <div class="arch-legend-item"><strong>Escalation</strong>Низкий conf → оператор + тикет</div>
+        <div class="arch-legend-item"><strong>Analytics</strong>Метрики и weak spots → Redis</div>
+      </div>
+    </section>
+
+    <!-- 4. DocHelper в работе (было → стало) -->
+    <section class="slide slide--solution" data-title="В работе">
+      <h2>DocHelper в работе</h2>
+      <p class="slide-lead">Один вопрос сотрудника — ответ из корпоративного docx, не из «головы» модели</p>
+      <div class="solution-split">
+        <div class="solution-visual">
+          <img data-pres="ill-solution.svg" alt="Пример диалога в DocHelper" />
         </div>
-        <div class="goal-card" style="--c:var(--cyan)">
-          <strong>Demo</strong>
-          <span>GigaChat для быстрого показа на хакатоне</span>
-        </div>
-        <div class="goal-card" style="--c:var(--purple)">
-          <strong>Переключение</strong>
-          <span>LLM_PROVIDER=ollama в .env</span>
+        <div class="value-stack">
+          <div class="value-box value-box--before">
+            <h3>Было</h3>
+            <ul>
+              <li>Листают PDF или пишут в чат поддержки</li>
+              <li>Оператор ищет ту же ссылку в десятый раз</li>
+              <li>Неясно, из какого документа взята инструкция</li>
+            </ul>
+          </div>
+          <div class="value-box value-box--after">
+            <h3>С DocHelper</h3>
+            <ul>
+              <li>Сотрудник спрашивает в TG или Web — как коллегу</li>
+              <li>Ответ с фрагментом docx и кнопкой «скачать»</li>
+              <li>Сомнительный кейс уходит оператору с историей диалога</li>
+            </ul>
+          </div>
         </div>
       </div>
+    </section>
+
+    <!-- 5. AI-агенты (orchestrator) -->
+    <section class="slide" data-title="AI-агенты">
+      <h2>Orchestrated pipeline — 6 агентов</h2>
+      <p>FastAPI orchestrator координирует цепочку — <strong style="color:var(--text)">не один chatbot</strong></p>
+      <div class="agents">
+        <div class="agent" style="--c:var(--agent-speech)"><strong>Speech</strong><span>Whisper: голос → текст</span></div>
+        <div class="agent" style="--c:var(--agent-retriever)"><strong>Retriever</strong><span>e5 + Qdrant: поиск фрагментов</span></div>
+        <div class="agent" style="--c:var(--agent-generator)"><strong>Generator</strong><span>LLM: ответ только из контекста</span></div>
+        <div class="agent" style="--c:var(--agent-evaluator)"><strong>Evaluator</strong><span>Confidence → авто / оператор</span></div>
+        <div class="agent" style="--c:var(--agent-escalation)"><strong>Escalation</strong><span>Usedesk-тикет + web-очередь</span></div>
+        <div class="agent" style="--c:var(--agent-analytics)"><strong>Analytics</strong><span>Метрики · weak spots · выгрузка</span></div>
+      </div>
+      <p style="margin-top:0.75rem;font-size:0.88rem;color:var(--muted)">Analytics — отдельный агент для поддержки и техписов, не для конечного пользователя</p>
     </section>
 
     <!-- 7. Demo -->
     <section class="slide" data-title="Demo">
       <h2>Что покажем live</h2>
-      <p style="margin-bottom:1rem;color:var(--text)">Не скриншоты — <strong>живой продукт</strong>. Жюри может повторить с QR на первом слайде.</p>
-      <ol class="solution-steps">
-        <li><strong style="color:var(--text)">Telegram</strong> — /start, вопрос «Как работает фильтр документа?» → ответ + источник</li>
-        <li><strong style="color:var(--text)">Web-чат</strong> — тот же вопрос, виден фрагмент из docx</li>
-        <li><strong style="color:var(--text)">Эскалация</strong> — кнопка «Оператор», панель дежурного отвечает пользователю</li>
-        <li><strong style="color:var(--text)">Аналитика</strong> — 94% авто, топ вопросов из брифа</li>
-      </ol>
-      <p style="margin-top:0.75rem;font-size:0.9rem;color:var(--muted)">Голос и скриншот — по времени, если успеем</p>
+      <p style="margin-bottom:0.65rem;color:var(--text)">Живой продукт или <strong>запись demo</strong> · QR на первом слайде</p>
+      <div class="demo-split">
+        <ol class="solution-steps" style="margin:0">
+          <li><strong style="color:var(--text)">Telegram / Web</strong> — «Как работает фильтр документа?» → ответ + источник</li>
+          <li><strong style="color:var(--text)">Web</strong> — схема из docx при визуальном вопросе</li>
+          <li><strong style="color:var(--text)">Эскалация</strong> — офис-менеджер → тикет + панель оператора</li>
+          <li><strong style="color:var(--text)">Аналитика</strong> — 94% авто, weak spots</li>
+        </ol>
+        <div class="demo-video-wrap">
+          <video id="demo-video" controls playsinline preload="metadata">
+            <source id="demo-video-mp4" type="video/mp4" />
+            <source id="demo-video-webm" type="video/webm" />
+          </video>
+          <div id="demo-video-placeholder" class="demo-video-placeholder">
+            Запись demo<br />
+            <span style="font-size:0.85rem;color:var(--muted)">если live недоступен</span>
+          </div>
+        </div>
+      </div>
+      <p style="margin-top:0.65rem;font-size:0.85rem;color:var(--muted)">На защите: live с QR или Play на видео · голос/скрин — по времени</p>
     </section>
 
-    <!-- 8. AI-агенты -->
-    <section class="slide" data-title="AI-агенты">
-      <h2>AI-агенты</h2>
-      <p>Не chatbot — <strong style="color:var(--text)">orchestrated pipeline</strong></p>
-      <div class="agents">
-        <div class="agent" style="--c:var(--agent-speech)"><strong>Speech</strong><span>Whisper: голос → текст</span></div>
-        <div class="agent" style="--c:var(--agent-retriever)"><strong>Retriever</strong><span>e5 + Qdrant: поиск фрагментов</span></div>
-        <div class="agent" style="--c:var(--agent-generator)"><strong>Generator</strong><span>GigaChat/Ollama: ответ</span></div>
-        <div class="agent" style="--c:var(--agent-evaluator)"><strong>Evaluator</strong><span>Confidence → авто / оператор</span></div>
-        <div class="agent" style="--c:var(--agent-escalation)"><strong>Escalation</strong><span>Support-чат + web-очередь</span></div>
-        <div class="agent" style="--c:var(--agent-analytics)"><strong>Analytics</strong><span>Метрики, дыры в docs</span></div>
+    <!-- 8. Метрики -->
+    <section class="slide slide--metrics" data-title="Метрики">
+      <h2>Метрики и аналитика</h2>
+      <div class="metrics-split">
+        <div class="metrics-visual">
+          <img data-pres="ill-metrics.svg" alt="94% автоматизация на тестах брифа" />
+        </div>
+        <div class="metrics-compact">
+          <p class="metrics-lead"><strong style="color:var(--green)">94%</strong> авто · цель ≥ 40% · <strong style="color:var(--cyan)">1,6 сек</strong></p>
+          <p class="metrics-note">17 кейсов брифа · 1 эскалация (нет в docs)</p>
+          <div class="metrics-block">
+            <h3>Analytics</h3>
+            <p style="margin:0;font-size:0.88rem;color:var(--muted)">Weak spots · тренды · % авто/эскалация</p>
+            <div class="export-row">
+              <span class="export-tag">Панель оператора</span>
+              <span class="export-tag">🔜 CSV · задачи техписам</span>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
-    <!-- 9. Метрики -->
-    <section class="slide" data-title="Метрики">
-      <div class="split">
-        <div>
-          <h2>Метрики</h2>
-          <ul>
-            <li>17 тест-кейсов из брифа заказчика</li>
-            <li><strong style="color:var(--green)">16 автоответов (94%)</strong></li>
-            <li>1 корректная эскалация</li>
-            <li>1–2 сек на ответ (GigaChat)</li>
-            <li>confidence + источник + фрагмент</li>
-          </ul>
-          <p><code>scripts/test_brief_cases.py</code></p>
-        </div>
-        <div class="illus">
-          <img src="/static/presentation/ill-metrics.svg" alt="94% авто" />
-        </div>
-      </div>
-    </section>
-
-    <!-- 10. Roadmap -->
+    <!-- 9. Roadmap -->
     <section class="slide" data-title="Roadmap">
       <h2>Roadmap</h2>
-      <table class="glass">
-        <tr><th>v</th><th>Функция</th></tr>
-        <tr><td>1.1</td><td>Git webhook → auto-reindex</td></tr>
-        <tr><td>1.2</td><td>Jira / Usedesk — тикеты</td></tr>
-        <tr><td>1.3</td><td>MAX-бот</td></tr>
-        <tr><td>1.4</td><td>Trend-аналитика документации</td></tr>
-      </table>
-      <p style="margin-top:1rem"><strong style="color:var(--text)">MVP готов к пилоту на документации Барс Груп</strong></p>
+      <div class="roadmap-block roadmap-block--next" style="max-width:640px;margin:0.75rem auto 0">
+        <h3>🔜 Следующий этап</h3>
+        <ul>
+          <li><strong style="color:var(--text)">MAX-бот</strong> — корпоративный мессенджер Барс, второй канал первой линии рядом с Telegram</li>
+          <li><strong style="color:var(--text)">Usedesk / Jira</strong> — боевые тикеты вместо mock при эскалации</li>
+          <li><strong style="color:var(--text)">Git / Confluence CI</strong> — авто-reindex при merge, docs всегда актуальны</li>
+        </ul>
+      </div>
     </section>
 
-    <!-- 11. Спасибо + QR -->
+    <!-- 10. Спасибо + QR -->
     <section class="slide slide--center" data-title="Спасибо">
       <span class="tag">Спасибо · one_commit</span>
       <h1><span class="accent">DocHelper</span></h1>
@@ -447,13 +561,13 @@
       <div class="qr-grid" style="margin-top:1rem;max-width:520px;grid-template-columns:1fr 1fr">
         <div class="qr-card qr-card--bot">
           <div class="qr-wrap qr-wrap--img">
-            <img src="/static/presentation/qr-telegram.png" alt="QR Telegram" />
+            <img data-pres="qr-telegram.png" alt="QR Telegram" />
           </div>
           <h3>@SUP_BARS_BOT</h3>
         </div>
         <div class="qr-card qr-card--web">
           <div class="qr-wrap qr-wrap--img">
-            <img src="/static/presentation/qr-web.png" alt="QR Web" />
+            <img data-pres="qr-web.png" alt="QR Web" />
           </div>
           <h3 id="link-web-2">Web-чат</h3>
         </div>
@@ -478,6 +592,9 @@
       slides.forEach((s, j) => s.classList.toggle("active", j === i));
       progress.style.width = ((i + 1) / slides.length * 100) + "%";
       slideNum.textContent = (i + 1) + " / " + slides.length + " · " + (slides[i].dataset.title || "");
+      document.querySelectorAll("video").forEach((v) => {
+        if (!v.paused) v.pause();
+      });
     }
 
     document.getElementById("prev").onclick = () => show(i - 1);
@@ -486,6 +603,21 @@
       if (e.key === "ArrowRight" || e.key === " ") { e.preventDefault(); show(i + 1); }
       if (e.key === "ArrowLeft") show(i - 1);
     });
+
+    function presAsset(name) {
+      if (location.protocol === "file:") {
+        const base = location.href.replace(/[^/\\]+$/, "");
+        return base + "presentation/" + name;
+      }
+      return "/static/presentation/" + name;
+    }
+
+    function initPresAssets() {
+      document.querySelectorAll("[data-pres]").forEach((el) => {
+        const url = presAsset(el.getAttribute("data-pres"));
+        if (el.tagName === "IMG") el.src = url;
+      });
+    }
 
     async function initLinks() {
       let links;
@@ -505,8 +637,40 @@
       if (web2) web2.innerHTML = "<a href='" + webUrl + "' target='_blank' style='color:var(--cyan)'>Web-чат</a>";
     }
 
+    async function initDemoVideo() {
+      const video = document.getElementById("demo-video");
+      const ph = document.getElementById("demo-video-placeholder");
+      if (!video || !ph) return;
+      const mp4 = document.getElementById("demo-video-mp4");
+      const webm = document.getElementById("demo-video-webm");
+      if (mp4) mp4.src = presAsset("demo.mp4");
+      if (webm) webm.src = presAsset("demo.webm");
+      video.load();
+      const paths = [presAsset("demo.mp4"), presAsset("demo.webm")];
+      let ok = false;
+      for (const p of paths) {
+        try {
+          const r = await fetch(p, { method: "HEAD" });
+          if (r.ok) {
+            ok = true;
+            break;
+          }
+        } catch {
+          /* local file or offline */
+        }
+      }
+      if (ok) {
+        ph.classList.add("hidden");
+        video.style.display = "block";
+      } else {
+        video.style.display = "none";
+      }
+    }
+
     show(0);
+    initPresAssets();
     initLinks();
+    initDemoVideo();
   </script>
 </body>
 </html>

@@ -1,111 +1,215 @@
 # DocHelper Барс
 
-Telegram + Web RAG-бот — кейс **АО «Барс Груп»**, хакатон **«Королева Кода»** (команда **one_commit**).
+AI-агент первой линии поддержки для кейса **АО «Барс Груп»**, хакатон **«Королева Кода»** (команда **one_commit**).
 
-📄 **[SUBMISSION.md](SUBMISSION.md)** — материалы для сдачи (описание, технологии, AI-раскрытие)  
-📊 **[PRESENTATION.md](PRESENTATION.md)** · 🎤 **[SPEECH.md](SPEECH.md)** — слайды и речь
+RAG-бот по корпоративной документации: **Telegram** + **Web**, эскалация на оператора, аналитика.
 
-> **Репозиторий:** https://tatarsan.space/one_commit/bars_support_bot
+| Материалы | Файл |
+|-----------|------|
+| Сдача проекта (описание, AI-раскрытие, чеклист) | [SUBMISSION.md](SUBMISSION.md) |
+| Презентация (текст слайдов) | [PRESENTATION.md](PRESENTATION.md) |
+| Речь на защиту | [SPEECH.md](SPEECH.md) |
+| HTML-презентация | http://127.0.0.1:8026/presentation (после запуска) |
 
-## Что умеет (MVP)
+**Репозиторий:** https://tatarsan.space/one_commit/bars_support_bot
 
-- RAG по docx/pdf/md с указанием **Источника**
-- Telegram + Web UI + админка + аналитика с диаграммами
-- GigaChat (быстрое демо) / Ollama (локальный закрытый контур)
-- Эскалация на оператора с историей диалога
-- **Голосовые** → Whisper (локально) → ответ нейросети
+---
 
-## Быстрый старт
+## Соответствие брифу
+
+### MVP (из брифа) — что требовалось
+
+| Требование брифа | Статус | Реализация |
+|------------------|--------|------------|
+| Приём **текстовых** сообщений в Telegram | ✅ | `app/bot/telegram_bot.py` |
+| Семантический поиск по docx / pdf / md | ✅ | Qdrant + `multilingual-e5-base` |
+| **Скрины, схемы, таблицы из базы знаний** (не от пользователя) | ✅ | Картинки из docx при индексации; в ответе Web — при визуальных вопросах |
+| RAG: ответ LLM + ссылка на документ | ✅ | GigaChat / Ollama, блок источника в UI |
+| Уверенность → «не нашёл» + кнопка оператора | ✅ | `CONFIDENCE_THRESHOLD`, inline-кнопка |
+| Эскалация: история → чат поддержки / оператор | ✅ | Очередь + панель `/operator` (вместо email в MVP — web-оператор) |
+| Базовая аналитика | ✅ | `/api/analytics`, панель оператора |
+| Антиспам / лимиты | ✅ | `app/services/rate_limit.py`, Redis + Web/TG |
+| Аналитика трендов / слабых мест доков | ✅ | `weak_spots`, тренд по дням, растущие темы |
+| Закрытый контур (LLM локально) | ✅ | Ollama + embeddings + Qdrant без обязательного интернета |
+
+### Будущие возможности (из брифа) — не MVP, roadmap
+
+| Требование брифа | Статус | Комментарий |
+|------------------|--------|-------------|
+| **Jira / Zendesk / Usedesk** — тикет из диалога | ⚠️ | Mock-тикет при эскалации + панель оператора; реальный API Usedesk по ключам |
+| Авто-reindex Confluence / Git | ⚠️ | Webhook `/api/integrations/webhooks/git`, кнопка «Симулировать push» в `/operator` |
+| **Скриншот пользователя** (ошибка на экране) | ⚠️ | Web + TG: vision + тип изображения; нужен `OLLAMA_VISION_MODEL` |
+
+### Сверх брифа (наше усиление MVP)
+
+| Функция | Статус | Комментарий |
+|---------|--------|-------------|
+| **Голосовые** в Telegram | ✅ | **В брифе MVP не было** — добавили Whisper для demo |
+| Web-чат + презентация | ✅ | Платформа брифа — «стационарная версия» |
+| Панель оператора с demo-очередью | ✅ | Удобнее для защиты, чем только TG-чат |
+
+**Тест-кейсы заказчика (17 вопросов):** `python scripts\test_brief_cases.py`  
+**Последний прогон:** 27.06.2026 → **16/17 (94%)** — [TEST_REPORT.md](TEST_REPORT.md)
+
+---
+
+## Требования
+
+- **Windows 10/11** или Linux
+- **Python 3.10+**
+- **Docker Desktop** (Qdrant, Redis, Ollama)
+- **~8 GB RAM** (embeddings + Ollama 3B; 7B — лучше на GPU/VM)
+- Диск **`D:/bars-support-bot-data`** (или свой `DATA_ROOT`) — модели **не в Git**
+
+---
+
+## Установка и запуск (Windows)
+
+### 1. Клонировать репозиторий
 
 ```powershell
-# 1. Инфраструктура (Qdrant, Redis, Ollama)
-.\scripts\docker_up.ps1
+git clone ssh://git@tatarsan.space/one_commit/bars_support_bot.git
+cd bars_support_bot
+```
 
-# 2. Документы кейса → data/docs
+### 2. Документы кейса
+
+Положите 4 docx из брифа в `data/docs/`:
+
+- `Functionalnie.docx` (или `Functionalnie.docx` из материалов)
+- `Komandirovka.docx`
+- `ReestrMebeli.docx`
+- `newbiePage.docx`
+
+Или скопируйте из папки материалов хакатона:
+
+```powershell
 .\scripts\copy_docs.ps1
+```
 
-# 3. Python + индекс
+### 3. Окружение Python
+
+```powershell
 python -m venv .venv
 .\.venv\Scripts\pip install -r requirements.txt
-.\.venv\Scripts\python scripts\ingest.py --clear
+copy .env.example .env
+# Отредактируйте .env: TELEGRAM_BOT_TOKEN, GIGACHAT_CREDENTIALS или LLM_PROVIDER=ollama
+```
 
-# 4. Запуск (Telegram + Web)
+### 4. Инфраструктура Docker
+
+```powershell
+.\scripts\setup_d_drive.ps1    # один раз — каталоги на D:
+.\scripts\docker_up.ps1        # Qdrant + Redis + Ollama + pull модели
+```
+
+### 5. Индексация базы знаний
+
+```powershell
+$env:DATA_ROOT="D:/bars-support-bot-data"
+$env:QDRANT_URL="http://127.0.0.1:6333"
+.\.venv\Scripts\python scripts\ingest.py --clear
+```
+
+### 6. Запуск бота
+
+```powershell
 .\scripts\start_local.ps1
 ```
 
-- Web: http://127.0.0.1:8026  
-- Health: http://127.0.0.1:8026/api/health  
-- Тест-кейсы брифа: `python scripts\test_brief_cases.py`
+| URL | Назначение |
+|-----|------------|
+| http://127.0.0.1:8026 | Web-чат пользователя |
+| http://127.0.0.1:8026/operator | Панель оператора |
+| http://127.0.0.1:8026/presentation | Презентация для защиты |
+| http://127.0.0.1:8026/api/health | Статус сервисов |
 
-## Модели — где лежат (не в Git!)
+Проверка готовности: `.\scripts\check_ready.ps1`
 
-Все тяжёлые файлы на диске **`D:/bars-support-bot-data`** (`DATA_ROOT`):
-
-| Что | Путь |
-|---|---|
-| Embeddings (e5) | `D:/bars-support-bot-data/huggingface` |
-| Whisper | `D:/bars-support-bot-data/whisper` |
-| Ollama LLM | `D:/bars-support-bot-data/ollama` |
-| Qdrant | `D:/bars-support-bot-data/qdrant` |
-
-**На VM:** смонтируйте тот же `DATA_ROOT` или заново скачайте модели на VM (см. ниже). В репозиторий модели **не коммитятся**.
-
-```powershell
-# Ollama на VM
-docker compose exec ollama ollama pull qwen2.5:3b-instruct
-
-# Whisper — скачается сам при первом голосовом (или заранее):
-# WHISPER_MODEL=tiny  # быстрее на CPU, хуже качество
-# WHISPER_MODEL=base  # баланс для демо
-```
-
-## Whisper — чтобы не «падал»
-
-1. На CPU используйте `WHISPER_MODEL=tiny` или `base` (не `small`/`medium`)
-2. Первое голосовое **долго** (~30–60 с) — идёт загрузка модели, это нормально
-3. Нужны пакеты: `faster-whisper`, `imageio-ffmpeg` (ffmpeg в комплекте)
-4. При ошибке бот предложит написать текстом или нажать «Оператор»
+---
 
 ## Telegram
 
-1. `TELEGRAM_BOT_TOKEN` в `.env`
-2. `TELEGRAM_SUPPORT_CHAT_ID` — чат для эскалации
-3. VPN, если `api.telegram.org` недоступен
-4. `/start` — подсказка и кнопки: Задать вопрос / Отмена / Оператор
+1. Создайте бота у [@BotFather](https://t.me/BotFather), токен в `.env` → `TELEGRAM_BOT_TOKEN`
+2. Если `api.telegram.org` недоступен — **VPN** или `TELEGRAM_PROXY_URL` в `.env`
+3. `/start` — приветствие; кнопки **«Задать вопрос»** и **«Отмена»**
+4. Оператор: `/operator`, слово «оператор» или inline-кнопка при низкой уверенности
+5. Голосовые и фото — поддерживаются (vision для фото — опционально)
 
-## `.env` (основное)
+**Важно:** одновременно может работать только **один** процесс Telegram-бота (локальный **или** Docker `app`).
+
+---
+
+## Настройка `.env` (основное)
 
 ```env
-LLM_PROVIDER=gigachat          # или ollama для закрытого контура
+DATA_ROOT=D:/bars-support-bot-data
+
+# LLM: gigachat (демо с интернетом) или ollama (закрытый контур)
+LLM_PROVIDER=gigachat
 GIGACHAT_CREDENTIALS=...
+
+# или локально:
+# LLM_PROVIDER=ollama
+# OLLAMA_BASE_URL=http://127.0.0.1:11434
+# OLLAMA_MODEL=qwen2.5:3b-instruct
+
+TELEGRAM_BOT_TOKEN=...
+TELEGRAM_ENABLED=true
+CONFIDENCE_THRESHOLD=0.55
 WHISPER_ENABLED=true
 WHISPER_MODEL=base
-DATA_ROOT=D:/bars-support-bot-data
+BOT_NAME=DocHelper Барс
 ```
 
-## Структура
+Полный пример: [.env.example](.env.example)
+
+---
+
+## Где лежат модели (не в Git)
+
+| Компонент | Путь под `DATA_ROOT` |
+|-----------|----------------------|
+| Embeddings e5 | `huggingface/` |
+| Whisper | `whisper/` |
+| Ollama LLM | `ollama/` |
+| Qdrant | `qdrant/` |
+| Картинки из docx | `doc-images/` |
+
+---
+
+## Структура проекта
 
 ```
-app/rag/       — парсинг, embeddings, Qdrant
-app/llm/       — Ollama / GigaChat
-app/services/  — chat, analytics, escalation, speech (Whisper)
-app/bot/       — Telegram
-app/api/       — REST
-static/        — Web UI
-scripts/       — ingest, test_brief_cases, start_local
+app/rag/          — парсинг docx, embeddings, Qdrant, иллюстрации
+app/llm/          — GigaChat / Ollama
+app/services/     — RAG-чат, аналитика, эскалация, Whisper
+app/bot/          — Telegram
+app/api/          — REST API
+static/           — Web UI, оператор, презентация
+scripts/          — ingest, тесты брифа, docker, запуск
+data/docs/        — документы для индексации (не в Git, если большие)
 ```
 
-## Коммит для хакатона (пример сообщения)
+---
 
-```
-feat: DocHelper Барс — RAG-бот первой линии поддержки для кейса Барс Груп
+## Положение хакатона — что сдаём
 
-Telegram + Web, GigaChat/Ollama, Qdrant, эскалация, аналитика, Whisper для голосовых.
-Хакатон «Королева Кода», команда one_commit.
-```
+1. **Краткое описание** — [SUBMISSION.md](SUBMISSION.md) §1  
+2. **Презентация** — [PRESENTATION.md](PRESENTATION.md) + `/presentation`  
+3. **Работающий прототип** — Web + Telegram (live demo)  
+4. **Исходный код** — этот репозиторий  
+5. **Технологии** — SUBMISSION.md §5  
+6. **Раскрытие AI** — SUBMISSION.md §6  
 
-Короткий вариант:
+Критерии оценки (35 баллов) — таблица в [SUBMISSION.md](SUBMISSION.md#соответствие-критериям-оценки).
 
-```
-feat: MVP DocHelper Барс — RAG + Telegram + GigaChat + Whisper (Королева Кода)
+---
+
+## Полезные команды
+
+```powershell
+python scripts\test_brief_cases.py   # 17 тест-кейсов брифа
+.\scripts\stop_bot.ps1               # остановить локальный процесс
+docker compose --profile full stop app  # не дублировать TG с Docker
 ```

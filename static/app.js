@@ -18,6 +18,8 @@ function setChatBusy(busy) {
   chatInput.disabled = busy;
   sendBtn.disabled = busy;
   document.getElementById("escalate-btn").disabled = busy;
+  const imgInput = document.getElementById("image-input");
+  if (imgInput) imgInput.disabled = busy;
 }
 
 function escapeHtml(s) {
@@ -135,6 +137,32 @@ function applyChatResponse(data, loadingEl, userText) {
   if (data.escalated) startOperatorPoll();
 }
 
+async function sendImage(file, caption = "") {
+  if (!file) return;
+  addMsg(caption ? `[скриншот] ${caption}` : "[скриншот]", "user");
+  setChatBusy(true);
+  const loadingEl = addMsg("Анализирую изображение…", "bot", "", false, true);
+
+  try {
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("message", caption);
+    fd.append("session_id", sessionId);
+    fd.append("user_label", "Web UI");
+
+    const res = await fetch("/api/chat/image", { method: "POST", body: fd });
+    if (!res.ok) throw new Error(await res.text());
+    const data = await res.json();
+    applyChatResponse(data, loadingEl, caption || "[скриншот]");
+  } catch (err) {
+    removeLoadingEl(loadingEl);
+    addMsg("Не удалось обработать изображение. Опишите текстом или нажмите «Оператор».", "bot", String(err.message || err), true);
+  } finally {
+    setChatBusy(false);
+    chatInput.focus();
+  }
+}
+
 async function sendChat(text, escalate = false) {
   addMsg(text, "user");
   setChatBusy(true);
@@ -203,6 +231,15 @@ document.getElementById("chat-form").addEventListener("submit", (e) => {
 });
 
 document.getElementById("escalate-btn").addEventListener("click", () => sendChat("оператор", true));
+
+document.getElementById("image-input")?.addEventListener("change", (e) => {
+  const file = e.target.files?.[0];
+  e.target.value = "";
+  if (!file) return;
+  const caption = chatInput.value.trim();
+  if (caption) chatInput.value = "";
+  sendImage(file, caption);
+});
 
 const chips = document.getElementById("faq-chips");
 FAQ_CHIPS.forEach((q) => {

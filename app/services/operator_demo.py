@@ -9,7 +9,26 @@ from app.services.session import append_message, get_history
 
 logger = logging.getLogger(__name__)
 
-DEMO_FLAG = "demo:operator_seeded"
+DEMO_FLAG = "demo:operator_seeded_v2"
+
+_DEMO_WAITING: dict = {
+    "session_id": "demo-web-open",
+    "user_label": "Ольга · Web",
+    "question": "Когда офис-менеджер принимает на Иванова?",
+    "messages": [
+        ("user", "Когда офис-менеджер принимает на Иванова?"),
+        (
+            "assistant",
+            "К сожалению, я пока не нашёл точного ответа в документации.\n\n"
+            "Могу переключить Вас на оператора — он продолжит с учётом истории диалога.",
+        ),
+        ("user", "оператор"),
+        (
+            "assistant",
+            "Понял, подключаю специалиста поддержки — он уже видит нашу переписку и скоро ответит.",
+        ),
+    ],
+}
 
 _DEMO_CHATS: tuple[dict, ...] = (
     {
@@ -143,6 +162,9 @@ def seed_demo_sessions(force: bool = False) -> None:
         clear_session(chat["session_id"])
         _remove_queue_item(chat["session_id"])
 
+    clear_session(_DEMO_WAITING["session_id"])
+    _remove_queue_item(_DEMO_WAITING["session_id"])
+
     now = time.time()
     for chat in _DEMO_CHATS:
         sid = chat["session_id"]
@@ -151,6 +173,14 @@ def seed_demo_sessions(force: bool = False) -> None:
         enqueue(sid, chat["user_label"], chat["question"])
         resolve(sid)
         _patch_ts(sid, now - chat["age_hours"] * 3600)
+
+    sid = _DEMO_WAITING["session_id"]
+    for role, content in _DEMO_WAITING["messages"]:
+        append_message(sid, role, content)
+    enqueue(sid, _DEMO_WAITING["user_label"], _DEMO_WAITING["question"])
+    from app.services.tickets import create_escalation_ticket
+
+    create_escalation_ticket(sid, _DEMO_WAITING["user_label"], _DEMO_WAITING["question"])
 
     from redis import Redis
 
@@ -163,7 +193,7 @@ def seed_demo_sessions(force: bool = False) -> None:
         except Exception as exc:
             logger.debug("demo flag not set: %s", exc)
 
-    logger.info("Operator demo sessions seeded (%d chats)", len(_DEMO_CHATS))
+    logger.info("Operator demo sessions seeded (%d closed + 1 open)", len(_DEMO_CHATS))
 
 
 def _remove_queue_item(session_id: str) -> None:

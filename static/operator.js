@@ -20,7 +20,10 @@ document.querySelectorAll(".tab").forEach((btn) => {
     document.querySelectorAll(".panel").forEach((p) => p.classList.remove("active"));
     btn.classList.add("active");
     document.getElementById(btn.dataset.tab).classList.add("active");
-    if (btn.dataset.tab === "docs") loadDocs();
+    if (btn.dataset.tab === "docs") {
+      loadDocs();
+      loadIntegrations();
+    }
     if (btn.dataset.tab === "stats") loadStats();
     if (btn.dataset.tab === "conversations") loadQueue();
   });
@@ -61,6 +64,29 @@ function renderDialogMessage(msg) {
   return row;
 }
 
+function ticketLabel(ticket) {
+  if (!ticket?.ticket_id) return "";
+  const p = String(ticket.provider || "TMS").toUpperCase();
+  return `${p} · ${ticket.ticket_id}`;
+}
+
+function renderTicketBadge(ticket, isResolved) {
+  const el = document.getElementById("dialog-ticket");
+  if (!el) return;
+  if (!ticket?.ticket_id) {
+    el.classList.add("hidden");
+    el.innerHTML = "";
+    return;
+  }
+  el.classList.remove("hidden");
+  const status = isResolved || ticket.status === "closed" ? "закрыт" : "открыт";
+  const note =
+    ticket.url && !ticket.url.startsWith("/operator")
+      ? `<a href="${escapeHtml(ticket.url)}" target="_blank" rel="noopener">Открыть в ${escapeHtml(ticket.provider)}</a>`
+      : `<span class="hint">В проде — ссылка на ${escapeHtml(ticket.provider)}; сейчас ответ в этой панели</span>`;
+  el.innerHTML = `<span class="ticket-id">${escapeHtml(ticketLabel(ticket))}</span> · ${status} · ${note}`;
+}
+
 function showDialog(item, isResolved = false) {
   selectedSessionId = item.session_id;
   selectedResolved = isResolved;
@@ -72,6 +98,7 @@ function showDialog(item, isResolved = false) {
     (item.question ? `«${item.question.slice(0, 80)}${item.question.length > 80 ? "…" : ""}» · ` : "") +
     new Date(item.ts * 1000).toLocaleString("ru-RU") +
     statusTag;
+  renderTicketBadge(item.ticket, isResolved);
 
   document.querySelectorAll(".session-item").forEach((el) => {
     el.classList.toggle("active", el.dataset.session === item.session_id);
@@ -136,7 +163,7 @@ function renderSessionButtons(items, container, isResolved) {
     .map(
       (item) =>
         `<button type="button" class="session-item${isResolved ? " session-item--resolved" : ""}${item.session_id === selectedSessionId ? " active" : ""}" data-session="${escapeHtml(item.session_id)}" data-resolved="${isResolved ? "1" : "0"}">
-          <span class="session-item-user">${escapeHtml(item.user_label || "Пользователь")}${isResolved ? ' <span class="session-tag">✓</span>' : ""}</span>
+          <span class="session-item-user">${escapeHtml(item.user_label || "Пользователь")}${isResolved ? ' <span class="session-tag">✓</span>' : ""}${item.ticket?.ticket_id ? ` <span class="session-tag session-tag--ticket">${escapeHtml(ticketLabel(item.ticket))}</span>` : ""}</span>
           <span class="session-item-q">${escapeHtml((item.question || "Без текста").slice(0, 90))}</span>
           <span class="session-item-time">${new Date(item.ts * 1000).toLocaleString("ru-RU")}</span>
         </button>`
@@ -345,10 +372,61 @@ document.getElementById("reindex-btn")?.addEventListener("click", async () => {
     if (s.errors?.length) status.textContent += " · " + s.errors.join("; ");
     loadDocs();
     loadStatus();
+    loadIntegrations();
   } catch (err) {
     status.textContent = "Ошибка переиндексации";
   }
 });
+
+async function loadIntegrations() {
+  const box = document.getElementById("integrations-box");
+  const syncStatus = document.getElementById("sync-status");
+  if (!box) return;
+  try {
+    const res = await fetch("/api/integrations/status");
+    const data = await res.json();
+    const last = data.last_sync;
+    const lastLine = last
+      ? `${new Date(last.ts * 1000).toLocaleString("ru-RU")} · ${escapeHtml(last.source)} · ${escapeHtml(last.message || last.trigger || "")}`
+      : "Ещё не было синхронизации";
+    box.innerHTML = `
+      <p><strong>TMS:</strong> ${escapeHtml(data.ticket_provider || "usedesk")} (mock — тикет виден в обращениях)</p>
+      <p class="hint">Git webhook: <code>${escapeHtml(data.webhooks?.git || "")}</code></p>
+      <p class="hint">Confluence webhook: <code>${escapeHtml(data.webhooks?.confluence || "")}</code></p>
+      <p class="hint">Последняя синхронизация: ${lastLine}</p>`;
+    if (syncStatus && last?.ok) {
+      syncStatus.textContent = `Последний reindex: ${last.files} файлов, ${last.chunks} фрагментов`;
+    }
+  } catch {
+    box.innerHTML = "<p class='hint'>Не удалось загрузить статус интеграций</p>";
+  }
+}
+
+async function runDemoSync(path, label) {
+  const syncStatus = document.getElementById("sync-status");
+  if (syncStatus) syncStatus.textContent = `${label}…`;
+  try {
+    const res = await fetch(path, { method: "POST" });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || res.statusText);
+    const s = data.sync || {};
+    if (syncStatus) {
+      syncStatus.textContent = `✓ ${label}: ${s.files || 0} файлов, ${s.chunks || 0} фрагментов`;
+    }
+    loadDocs();
+    loadStatus();
+    loadIntegrations();
+  } catch (err) {
+    if (syncStatus) syncStatus.textContent = `Ошибка: ${err.message || err}`;
+  }
+}
+
+document.getElementById("demo-git-sync-btn")?.addEventListener("click", () =>
+  runDemoSync("/api/integrations/demo/git-sync", "Git push → reindex")
+);
+document.getElementById("demo-confluence-sync-btn")?.addEventListener("click", () =>
+  runDemoSync("/api/integrations/demo/confluence-sync", "Confluence update → reindex")
+);
 
 function renderBars(items, labelKey, valueKey, fillClass = "") {
   if (!items.length) return '<p class="hint">Нет данных</p>';
@@ -378,11 +456,48 @@ function renderConfBars(buckets) {
     .join("");
 }
 
+function renderGapList(items) {
+  if (!items.length) return '<p class="hint">Пока нет явных пробелов — бот отвечает уверенно.</p>';
+  return `<ul class="gap-list">${items
+    .map(
+      (g) =>
+        `<li class="gap-item">
+          <span class="gap-q">${escapeHtml(g.question)}</span>
+          <span class="gap-meta">${g.count}× · conf ${(g.avg_confidence * 100).toFixed(0)}%</span>
+          <span class="gap-rec">${escapeHtml(g.recommendation)}</span>
+        </li>`
+    )
+    .join("")}</ul>`;
+}
+
+function renderTrendDaily(items) {
+  if (!items.length) return '<p class="hint">Недостаточно данных для тренда</p>';
+  const max = Math.max(...items.map((i) => i.total), 1);
+  return items
+    .map((d) => {
+      const autoPct = d.total ? (d.auto / d.total) * 100 : 0;
+      const pct = (d.total / max) * 100;
+      return `<div class="bar-row"><span class="bar-label">${escapeHtml(d.date)}</span><div class="bar-track"><div class="bar-fill trend" style="width:${pct}%"></div></div><span class="bar-val">${d.total} (${autoPct.toFixed(0)}% авто)</span></div>`;
+    })
+    .join("");
+}
+
+function renderRising(items) {
+  if (!items.length) return '<p class="hint">Рост тем не выявлен</p>';
+  return items
+    .map(
+      (t) =>
+        `<div class="bar-row"><span class="bar-label">${escapeHtml(t.question.slice(0, 60))}${t.question.length > 60 ? "…" : ""}</span><span class="bar-val">+${t.recent_count - t.earlier_count} (${t.recent_count} недавно)</span></div>`
+    )
+    .join("");
+}
+
 async function loadStats() {
   try {
     const res = await fetch("/api/analytics");
     const s = await res.json();
     const recentRows = (s.recent || [])
+      .filter((r) => r.kind !== "rate_limit")
       .slice(0, 15)
       .map(
         (r) => `<tr>
@@ -396,11 +511,13 @@ async function loadStats() {
       .join("");
     const autoPct = s.total_queries ? (s.auto_answered / s.total_queries) * 100 : 0;
     const donutStyle = `background: conic-gradient(#10b981 0 ${autoPct}%, #ef4444 ${autoPct}% 100%)`;
+    const trends = s.trends || {};
     document.getElementById("stats-box").innerHTML = `
     <div class="stats-grid">
       <div class="stat-card"><span class="stat-num">${s.total_queries}</span><span class="stat-label">Всего запросов</span></div>
       <div class="stat-card"><span class="stat-num">${s.auto_answered}</span><span class="stat-label">Автоответов</span></div>
       <div class="stat-card"><span class="stat-num">${s.escalated}</span><span class="stat-label">Эскалаций</span></div>
+      <div class="stat-card"><span class="stat-num">${s.rate_limited ?? 0}</span><span class="stat-label">Заблок. спам</span></div>
       <div class="stat-card"><span class="stat-num">${s.auto_rate_percent}%</span><span class="stat-label">Доля авто · цель 40%</span></div>
     </div>
     <div class="progress-wrap"><div class="progress-bar" style="width:${Math.min(s.auto_rate_percent, 100)}%"></div></div>
@@ -411,6 +528,13 @@ async function loadStats() {
     <div class="charts-row">
       <div class="chart-card"><h3>Топ вопросов</h3>${renderBars(s.top_questions || [], "question", "count")}</div>
       <div class="chart-card"><h3>Источники</h3>${renderBars(s.top_sources || [], "source", "count", "src")}</div>
+    </div>
+    <h3 class="stats-section-title">Слабые места документации</h3>
+    <p class="hint stats-hint">Вопросы с низкой уверенностью, без источника или с эскалацией — кандидаты на доработку базы знаний.</p>
+    ${renderGapList(s.weak_spots || s.doc_gaps || [])}
+    <div class="charts-row">
+      <div class="chart-card"><h3>Тренд по дням</h3>${renderTrendDaily(trends.daily || [])}</div>
+      <div class="chart-card"><h3>Растущие темы</h3>${renderRising(trends.rising_topics || [])}</div>
     </div>
     <h3 class="stats-section-title">Последние запросы</h3>
     <table class="recent-table"><thead><tr><th>Время</th><th>Вопрос</th><th>Conf.</th><th>Итог</th><th>Источник</th></tr></thead><tbody>${recentRows || "<tr><td colspan='5'>Нет данных</td></tr>"}</tbody></table>`;

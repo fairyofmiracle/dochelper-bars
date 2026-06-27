@@ -59,6 +59,21 @@ class Settings(BaseSettings):
 
     escalation_keywords: str = "оператор,человек,живой,менеджер"
 
+    rate_limit_enabled: bool = True
+    rate_limit_max_per_window: int = 12
+    rate_limit_window_sec: int = 60
+    rate_limit_duplicate_max: int = 4
+    rate_limit_duplicate_window_sec: int = 120
+    rate_limit_block_sec: int = 45
+
+    ticket_provider: str = "usedesk"
+    ticket_base_url: str = ""
+    usedesk_api_url: str = ""
+    usedesk_api_token: str = ""
+
+    webhook_secret: str = ""
+    sync_reindex_clear: bool = False
+
 
 settings = Settings()
 

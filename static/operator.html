@@ -44,7 +44,7 @@
             <h2>Ожидают ответа</h2>
             <span id="queue-badge" class="badge">0</span>
           </div>
-          <p class="hint session-list-hint">Эскалации из Telegram и Web. Закрытые — для истории.</p>
+          <p class="hint session-list-hint">Эскалации из Telegram и Web. Тикет Usedesk/Jira создаётся автоматически — ответ здесь.</p>
           <div id="session-list" class="session-list">Загрузка…</div>
           <div class="session-list-head session-list-head--resolved">
             <h2>Закрытые</h2>
@@ -64,6 +64,7 @@
               <div>
                 <strong id="dialog-user">Пользователь</strong>
                 <span id="dialog-meta" class="hint"></span>
+                <div id="dialog-ticket" class="ticket-badge hidden"></div>
               </div>
               <button type="button" id="resolve-btn" class="btn btn-outline btn-sm">Закрыть обращение</button>
             </header>
@@ -96,6 +97,19 @@
         <p id="upload-status" class="upload-status hint"></p>
         <button id="reindex-btn" class="btn btn-secondary">Переиндексировать всё</button>
         <ul id="doc-list" class="doc-list"></ul>
+      </div>
+
+      <div class="section-head" style="margin-top:1.5rem">
+        <h2>Интеграции (демо)</h2>
+        <p class="hint">Git webhook → auto-reindex. Эскалация → тикет в Usedesk/Jira (mock для защиты).</p>
+      </div>
+      <div class="glass card-block integrations-card">
+        <div id="integrations-box" class="integrations-box">Загрузка…</div>
+        <div class="integrations-actions">
+          <button type="button" id="demo-git-sync-btn" class="btn btn-primary btn-sm">Симулировать push из Git</button>
+          <button type="button" id="demo-confluence-sync-btn" class="btn btn-outline btn-sm">Симулировать Confluence</button>
+        </div>
+        <p id="sync-status" class="upload-status hint"></p>
       </div>
     </section>
 

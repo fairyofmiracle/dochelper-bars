@@ -24,6 +24,7 @@ from redis import Redis
 from app.api.admin import router as admin_router
 from app.api.analytics import router as analytics_router
 from app.api.chat import router as chat_router
+from app.api.integrations import router as integrations_router
 from app.api.operator import router as operator_router
 from app.branding import web_welcome_intro
 from app.config import settings
@@ -119,6 +120,7 @@ app.include_router(chat_router)
 app.include_router(admin_router)
 app.include_router(analytics_router)
 app.include_router(operator_router)
+app.include_router(integrations_router)
 
 if STATIC.exists():
     app.mount("/static", StaticFiles(directory=str(STATIC)), name="static")

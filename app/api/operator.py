@@ -6,6 +6,7 @@ from fastapi import APIRouter, Header, HTTPException
 from app.api.schemas import OperatorReplyRequest
 from app.config import settings
 from app.services.escalation_queue import list_queue, resolve
+from app.services.tickets import close_ticket
 from app.services.session import append_message, get_history
 
 router = APIRouter(prefix="/api/operator", tags=["operator"])
@@ -44,6 +45,7 @@ async def operator_reply(body: OperatorReplyRequest, x_operator_pin: str | None 
         append_message(body.session_id, "operator", text)
     if body.resolve:
         resolve(body.session_id)
+        close_ticket(body.session_id)
     return {"ok": True}
 
 

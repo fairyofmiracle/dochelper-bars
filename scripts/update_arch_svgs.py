@@ -1,4 +1,9 @@
-<?xml version="1.0" encoding="UTF-8"?>
+"""Write architecture SVGs with UTF-8 Russian labels."""
+from pathlib import Path
+
+OUT = Path(__file__).resolve().parents[1] / "static" / "presentation"
+
+MAIN = """<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 230" fill="none">
   <rect x="10" y="10" width="700" height="210" rx="18" fill="rgba(16,185,129,0.06)" stroke="rgba(16,185,129,0.5)" stroke-width="2" stroke-dasharray="8 4"/>
   <text x="360" y="38" text-anchor="middle" font-family="Manrope,system-ui,sans-serif" font-size="14" font-weight="700" fill="#10b981">Закрытый контур — данные не уходят наружу</text>
@@ -41,3 +46,40 @@
     </marker>
   </defs>
 </svg>
+"""
+
+STACK = """<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 220" fill="none">
+  <rect x="8" y="8" width="284" height="204" rx="16" fill="#0f172a" stroke="rgba(16,185,129,0.35)" stroke-width="1.5"/>
+  <text x="150" y="32" text-anchor="middle" font-family="Manrope,system-ui,sans-serif" font-size="11" font-weight="700" fill="#94a3b8">Тесты брифа · 17 кейсов</text>
+  <circle cx="95" cy="118" r="58" stroke="#1e293b" stroke-width="12"/>
+  <circle cx="95" cy="118" r="58" stroke="url(#donut)" stroke-width="12" stroke-dasharray="327 364" stroke-linecap="round" transform="rotate(-90 95 118)"/>
+  <text x="95" y="114" text-anchor="middle" font-family="Manrope,system-ui,sans-serif" font-size="26" font-weight="800" fill="#10b981">94%</text>
+  <text x="95" y="134" text-anchor="middle" font-family="Manrope,system-ui,sans-serif" font-size="9" fill="#64748b">авто</text>
+  <rect x="175" y="58" width="110" height="36" rx="10" fill="rgba(0,132,255,0.12)" stroke="#0084FF"/>
+  <text x="185" y="74" font-family="Manrope,system-ui,sans-serif" font-size="9" fill="#64748b">Всего</text>
+  <text x="185" y="88" font-family="Manrope,system-ui,sans-serif" font-size="14" font-weight="700" fill="#e2e8f0">17</text>
+  <rect x="175" y="102" width="110" height="36" rx="10" fill="rgba(16,185,129,0.12)" stroke="#10b981"/>
+  <text x="185" y="118" font-family="Manrope,system-ui,sans-serif" font-size="9" fill="#64748b">Авто</text>
+  <text x="185" y="132" font-family="Manrope,system-ui,sans-serif" font-size="14" font-weight="700" fill="#10b981">16</text>
+  <rect x="175" y="146" width="110" height="36" rx="10" fill="rgba(239,68,68,0.1)" stroke="#ef4444"/>
+  <text x="185" y="162" font-family="Manrope,system-ui,sans-serif" font-size="9" fill="#64748b">Эскалация</text>
+  <text x="185" y="176" font-family="Manrope,system-ui,sans-serif" font-size="14" font-weight="700" fill="#fca5a5">1</text>
+  <rect x="24" y="188" width="252" height="8" rx="4" fill="#1e293b"/>
+  <rect x="24" y="188" width="236" height="8" rx="4" fill="url(#bar)"/>
+  <text x="150" y="206" text-anchor="middle" font-family="Manrope,system-ui,sans-serif" font-size="9" fill="#64748b">~1,6 сек · цель ≥ 40%</text>
+  <defs>
+    <linearGradient id="donut" x1="37" y1="60" x2="153" y2="176" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#10b981"/><stop offset="1" stop-color="#0084FF"/>
+    </linearGradient>
+    <linearGradient id="bar" x1="24" y1="192" x2="276" y2="192" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#10b981"/><stop offset="1" stop-color="#0084FF"/>
+    </linearGradient>
+  </defs>
+</svg>
+"""
+
+(OUT / "ill-arch.svg").write_text(MAIN, encoding="utf-8")
+(OUT / "ill-arch-stack.svg").write_text(STACK, encoding="utf-8")
+(OUT / "ill-metrics.svg").write_text(METRICS, encoding="utf-8")
+print("ok:", OUT / "ill-arch.svg", OUT / "ill-metrics.svg")

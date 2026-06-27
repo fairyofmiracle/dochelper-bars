@@ -10,6 +10,7 @@ from redis import Redis
 
 from app.config import settings
 from app.services.session import get_history
+from app.services.tickets import get_ticket
 
 logger = logging.getLogger(__name__)
 
@@ -94,6 +95,7 @@ def list_queue() -> list[dict]:
                 **row,
                 "history": history,
                 "message_count": len(history),
+                "ticket": get_ticket(sid),
             }
         )
     return out

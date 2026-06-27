@@ -25,6 +25,8 @@ class ChatResponse(BaseModel):
     images: list[str] = []
     source_snippets: list[SourceSnippetOut] = []
     user_question: str = ""
+    image_type: str = ""
+    image_preview: str = ""
 
 
 class OperatorReplyRequest(BaseModel):
