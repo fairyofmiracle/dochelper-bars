@@ -16,8 +16,8 @@ os.environ.setdefault("SENTENCE_TRANSFORMERS_HOME", _hf)
 os.environ.setdefault("HF_HUB_DISABLE_TELEMETRY", "1")
 
 import httpx
-from fastapi import FastAPI
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, Request
+from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from redis import Redis
 
@@ -149,14 +149,18 @@ async def operator_page():
     return FileResponse(STATIC / "index.html")
 
 
-@app.get("/presentation")
-async def presentation_page():
-    deck = STATIC / "presentation.html"
-    if deck.exists():
-        return FileResponse(deck)
-    from fastapi import HTTPException
-
-    raise HTTPException(404, "Presentation not found")
+@app.get("/api/demo-links")
+async def demo_links(request: Request):
+    base = settings.public_demo_url.strip().rstrip("/") or str(request.base_url).rstrip("/")
+    bot_user = settings.telegram_bot_username.strip().lstrip("@")
+    telegram = f"https://t.me/{bot_user}" if bot_user else ""
+    return {
+        "web_chat": f"{base}/",
+        "operator": f"{base}/operator",
+        "telegram": telegram,
+        "telegram_set": bool(bot_user),
+        "repo": "https://tatarsan.space/one_commit/bars_support_bot",
+    }
 
 
 @app.get("/")

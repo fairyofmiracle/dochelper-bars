@@ -261,11 +261,9 @@ body {
   font-weight: 700;
 }
 .msg-row.bot .msg-avatar {
-  background: transparent;
-  padding: 0;
-  overflow: hidden;
+  background: linear-gradient(135deg, var(--accent), var(--cyan));
+  color: #fff;
 }
-.msg-row.bot .msg-avatar img { display: block; border-radius: 10px; }
 .msg-row.operator .msg-avatar {
   background: rgba(16, 185, 129, 0.2);
   color: var(--success);

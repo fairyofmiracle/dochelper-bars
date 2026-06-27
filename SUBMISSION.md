@@ -44,7 +44,8 @@
 
 ## 2. Презентация для защиты
 
-Полный текст слайдов: **[PRESENTATION.md](PRESENTATION.md)**
+Полный текст слайдов: **[PRESENTATION.md](PRESENTATION.md)**  
+**HTML-презентация:** [static/presentation.html](static/presentation.html) — открыть **локально** на ноутбуке (не с сервера demo)
 
 Рекомендуемый формат: **8–10 слайдов**, **5 мин live demo** + **2 мин вопросы**.
 
@@ -81,10 +82,8 @@ python scripts\test_brief_cases.py
 ## 4. Ссылка на исходный код
 
 ```
-https://github.com/<ВАШ-ЛОГИН>/bars-support-bot
+https://tatarsan.space/one_commit/bars_support_bot
 ```
-
-> ⚠️ Замените `<ВАШ-ЛОГИН>` на реальный URL после `git push`.
 
 **Структура репозитория:** см. [README.md](README.md)
 

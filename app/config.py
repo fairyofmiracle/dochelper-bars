@@ -48,6 +48,9 @@ class Settings(BaseSettings):
     whisper_enabled: bool = True
     whisper_model: str = "base"
 
+    telegram_bot_username: str = ""
+    public_demo_url: str = ""
+
     operator_pin: str = ""
 
     escalation_keywords: str = "оператор,человек,живой,менеджер"

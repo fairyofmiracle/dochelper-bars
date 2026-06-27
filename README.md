@@ -3,9 +3,9 @@
 Telegram + Web RAG-бот — кейс **АО «Барс Групп»**, хакатон **«Королева Кода»** (команда **one_commit**).
 
 📄 **[SUBMISSION.md](SUBMISSION.md)** — материалы для сдачи (описание, технологии, AI-раскрытие)  
-📊 **[PRESENTATION.md](PRESENTATION.md)** — текст слайдов для защиты
+📊 **[PRESENTATION.md](PRESENTATION.md)** · 🎤 **[SPEECH.md](SPEECH.md)** — слайды и речь
 
-> **Репозиторий:** `https://github.com/<ваш-логин>/bars-support-bot` ← вставьте ссылку после push
+> **Репозиторий:** https://tatarsan.space/one_commit/bars_support_bot
 
 ## Что умеет (MVP)
 

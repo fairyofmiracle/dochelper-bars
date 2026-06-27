@@ -62,7 +62,7 @@ function addMsg(text, role, meta = "", needsOperator = false, isLoading = false,
     avatar.textContent = "Оп";
     row.classList.add("operator");
   } else {
-    avatar.innerHTML = '<img src="/static/bars-mascot.svg" alt="Барс" width="28" height="28" />';
+    avatar.textContent = "AI";
   }
 
   const body = document.createElement("div");

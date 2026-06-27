@@ -8,7 +8,7 @@ from telegram import BotCommand, InlineKeyboardButton, InlineKeyboardMarkup, Key
 from telegram.constants import ChatAction, ParseMode
 from telegram.ext import Application, CallbackQueryHandler, CommandHandler, ContextTypes, MessageHandler, filters
 
-from app.branding import FAQ_TOPICS, START_HINT, welcome_message
+from app.branding import welcome_message
 from app.config import settings, telegram_proxy_url
 from app.rag.image_store import resolve_doc_image
 from app.rag.vision import vision_ready
@@ -29,7 +29,7 @@ BTN_OPERATOR = "Переключить на оператора"
 MAIN_KEYBOARD = ReplyKeyboardMarkup(
     [
         [KeyboardButton(BTN_ASK)],
-        [KeyboardButton(BTN_CANCEL), KeyboardButton(BTN_OPERATOR)],
+        [KeyboardButton(BTN_CANCEL)],
     ],
     resize_keyboard=True,
     is_persistent=True,
@@ -42,15 +42,6 @@ def operator_inline_keyboard() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         [[InlineKeyboardButton(BTN_OPERATOR, callback_data="escalate")]]
     )
-
-
-def faq_inline_keyboard() -> InlineKeyboardMarkup:
-    """Кнопки частых тем (брендбук п.4)."""
-    rows = []
-    for i, topic in enumerate(FAQ_TOPICS):
-        label = topic if len(topic) <= 40 else topic[:37] + "…"
-        rows.append([InlineKeyboardButton(label, callback_data=f"faq:{i}")])
-    return InlineKeyboardMarkup(rows)
 
 
 def _session_id(update: Update) -> str:
@@ -169,7 +160,7 @@ async def _process_question(update: Update, context: ContextTypes.DEFAULT_TYPE, 
         await _send_result(
             update,
             result.answer,
-            result.needs_operator or result.escalated,
+            result.needs_operator and not result.escalated,
             edit_message=status_msg,
             images=result.images,
         )
@@ -182,13 +173,11 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         reply_markup=MAIN_KEYBOARD,
     )
     await update.message.reply_text(
-        START_HINT,
+        "Напишите вопрос текстом, *голосовым* или *скриншотом*.\n"
+        "Кнопка «Задать вопрос» — чтобы явно начать диалог.\n\n"
+        "Если не найду ответ в документации — предложу оператора.",
         parse_mode=ParseMode.MARKDOWN,
         reply_markup=MAIN_KEYBOARD,
-    )
-    await update.message.reply_text(
-        "Частые темы — нажмите, чтобы сразу задать вопрос:",
-        reply_markup=faq_inline_keyboard(),
     )
 
 
@@ -202,9 +191,9 @@ async def help_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(
         f"«{BTN_ASK}» — задать вопрос по документации\n"
         f"«{BTN_CANCEL}» — отменить текущее действие\n"
-        f"«{BTN_OPERATOR}» — связаться с оператором\n"
+        f"/operator — связаться с оператором (если бот не помог)\n"
         f"{voice_line}\n"
-        "Команды: /start, /operator",
+        "Команды: /start, /help, /operator",
         reply_markup=MAIN_KEYBOARD,
     )
 
@@ -294,7 +283,7 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         await _send_result(
             update,
             result.answer,
-            result.needs_operator or result.escalated,
+            result.needs_operator and not result.escalated,
             edit_message=status,
             images=result.images,
         )
@@ -320,7 +309,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     if text == BTN_CANCEL:
         context.user_data.pop("awaiting_question", None)
         await update.message.reply_text(
-            "Действие отменено. Нажмите «Задать вопрос» или выберите тему из меню.",
+            "Действие отменено. Нажмите «Задать вопрос» или напишите вопрос текстом.",
             reply_markup=MAIN_KEYBOARD,
         )
         return
@@ -339,8 +328,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         return
 
     await update.message.reply_text(
-        f"Нажмите «{BTN_ASK}», выберите тему ниже или «{BTN_OPERATOR}» для связи с оператором.",
-        reply_markup=faq_inline_keyboard(),
+        f"Напишите вопрос текстом или нажмите «{BTN_ASK}».",
+        reply_markup=MAIN_KEYBOARD,
     )
 
 
@@ -353,23 +342,7 @@ async def operator_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         user = update.effective_user
         await notify_support(sid, user.full_name if user else "unknown")
         enqueue(sid, user.full_name if user else "unknown", BTN_OPERATOR)
-        await _send_result(update, result.answer, True)
-
-
-async def callback_faq(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    query = update.callback_query
-    await query.answer()
-    data = query.data or ""
-    if not data.startswith("faq:"):
-        return
-    try:
-        idx = int(data.split(":", 1)[1])
-        question = FAQ_TOPICS[idx]
-    except (ValueError, IndexError):
-        return
-    if query.message:
-        await query.message.reply_text(question)
-    await _process_question(update, context, question)
+        await _send_result(update, result.answer, False)
 
 
 async def callback_escalate(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -386,7 +359,7 @@ async def callback_escalate(update: Update, context: ContextTypes.DEFAULT_TYPE) 
         if query.message:
             await query.message.reply_text(result.answer, reply_markup=MAIN_KEYBOARD)
         else:
-            await _send_result(update, result.answer, True)
+            await _send_result(update, result.answer, False)
 
 
 async def _post_init(application: Application) -> None:
@@ -419,7 +392,6 @@ def build_application() -> Application:
     app.add_handler(CommandHandler("help", help_cmd))
     app.add_handler(CommandHandler("operator", operator_cmd))
     app.add_handler(CallbackQueryHandler(callback_escalate, pattern="^escalate$"))
-    app.add_handler(CallbackQueryHandler(callback_faq, pattern="^faq:"))
     app.add_handler(MessageHandler(filters.VOICE | filters.AUDIO, handle_voice))
     app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))

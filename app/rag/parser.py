@@ -72,7 +72,9 @@ def parse_docx(path: Path) -> tuple[str, list[tuple[str, bytes]]]:
     except zipfile.BadZipFile:
         pass
 
-    return "\n\n".join(parts), images
+    from app.rag.docx_sections import enrich_parsed_text
+
+    return enrich_parsed_text(path, "\n\n".join(parts)), images
 
 
 def parse_pdf(path: Path) -> str:
