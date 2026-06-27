@@ -33,6 +33,8 @@ for _quiet in ("httpx", "huggingface_hub", "sentence_transformers.base.model"):
     logging.getLogger(_quiet).setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
+telegram_status: dict[str, object] = {"running": False, "error": None}
+
 ROOT = Path(__file__).resolve().parent
 STATIC = ROOT / "static"
 
@@ -46,9 +48,9 @@ async def lifespan(app: FastAPI):
         from app.llm.warmup import warmup_ollama
         from app.rag.embedder import warmup_embedder
 
-        await asyncio.to_thread(warmup_embedder)
         await asyncio.to_thread(warmup_ollama)
-        logger.info("Embedding + LLM warmup done")
+        await asyncio.to_thread(warmup_embedder)
+        logger.info("LLM + embedding warmup done")
     except Exception as exc:
         logger.warning("Model warmup skipped: %s", exc)
 
@@ -75,9 +77,17 @@ async def lifespan(app: FastAPI):
             await tg_app.start()
             if tg_app.updater:
                 await tg_app.updater.start_polling(drop_pending_updates=True)
+            telegram_status["running"] = True
+            telegram_status["error"] = None
             logger.info("Telegram bot started (single instance — do not run Docker app in parallel)")
         except Exception as exc:
-            logger.error("Telegram bot failed: %s", exc)
+            telegram_status["running"] = False
+            telegram_status["error"] = str(exc)
+            logger.error(
+                "Telegram bot failed: %s — проверьте доступ к api.telegram.org "
+                "или задайте TELEGRAM_PROXY_URL в .env",
+                exc,
+            )
     elif settings.telegram_bot_token.strip():
         logger.info("Telegram bot disabled (TELEGRAM_ENABLED=false)")
 
@@ -156,6 +166,9 @@ async def health():
         "qdrant_points": qdrant_points,
         "redis_ok": redis_ok,
         "telegram_token_set": bool(settings.telegram_bot_token),
+        "telegram_running": telegram_status["running"],
+        "telegram_error": telegram_status["error"],
+        "telegram_proxy_set": bool(settings.telegram_proxy_url.strip()),
         "support_chat_set": bool(settings.telegram_support_chat_id),
         "docs_count": docs_count,
     }

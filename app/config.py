@@ -8,6 +8,7 @@ class Settings(BaseSettings):
 
     telegram_bot_token: str = ""
     telegram_support_chat_id: str = ""
+    telegram_proxy_url: str = ""
 
     llm_provider: str = "ollama"
     ollama_base_url: str = "http://127.0.0.1:11434"
@@ -52,3 +53,8 @@ ESCALATION_WORDS = {
     for w in settings.escalation_keywords.split(",")
     if w.strip()
 }
+
+
+def telegram_proxy_url() -> str | None:
+    url = settings.telegram_proxy_url.strip()
+    return url or None

@@ -47,7 +47,8 @@ def _ollama(system: str, user: str) -> str:
         "options": {
             "temperature": 0.2,
             "num_predict": 350,
-            "num_ctx": 4096,
+            "num_ctx": 2048,
+            "num_thread": 2,
         },
     }
     with httpx.Client(timeout=180.0) as client:

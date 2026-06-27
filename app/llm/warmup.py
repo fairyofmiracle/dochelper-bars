@@ -22,7 +22,7 @@ def warmup_ollama() -> None:
                 "model": settings.ollama_model,
                 "messages": [{"role": "user", "content": "ok"}],
                 "stream": False,
-                "options": {"num_predict": 1, "temperature": 0},
+                "options": {"num_predict": 1, "temperature": 0, "num_thread": 2, "num_ctx": 2048},
             },
         )
         r.raise_for_status()

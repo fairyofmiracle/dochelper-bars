@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import httpx
 
-from app.config import settings
+from app.config import settings, telegram_proxy_url
 from app.services.session import format_history_for_escalation
 
 
@@ -26,6 +26,7 @@ async def notify_support(session_id: str, user_label: str, last_message: str = "
         text = text[:3990] + "…"
 
     url = f"https://api.telegram.org/bot{token}/sendMessage"
-    async with httpx.AsyncClient(timeout=30.0) as client:
+    proxy = telegram_proxy_url()
+    async with httpx.AsyncClient(timeout=30.0, proxy=proxy) as client:
         r = await client.post(url, json={"chat_id": chat_id, "text": text})
         return r.status_code == 200

@@ -23,6 +23,10 @@ services:
     platform: linux/amd64
     ports:
       - "11434:11434"
+    environment:
+      OLLAMA_NUM_PARALLEL: "1"
+      OLLAMA_MAX_LOADED_MODELS: "1"
+      OLLAMA_KEEP_ALIVE: "10m"
     volumes:
       - ${DATA_ROOT}/ollama:/root/.ollama
     restart: unless-stopped

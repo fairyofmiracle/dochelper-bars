@@ -62,6 +62,8 @@ def _get_st_model():
 def warmup_embedder() -> None:
     """Загрузить модель embeddings в RAM один раз при старте."""
     if settings.embed_provider == "ollama":
+        _ollama_embed("warmup")
+        logger.info("Ollama embedding model ready: %s", settings.embed_model)
         return
     _get_st_model()
     embed_query("warmup")
@@ -90,8 +92,17 @@ def embed_query(query: str) -> list[float]:
 
 
 def _ollama_embed(text: str) -> list[float]:
-    url = f"{settings.ollama_base_url.rstrip('/')}/api/embeddings"
+    base = settings.ollama_base_url.rstrip("/")
+    payload = {"model": settings.embed_model, "input": text}
     with httpx.Client(timeout=120.0) as client:
-        r = client.post(url, json={"model": settings.embed_model, "prompt": text})
+        r = client.post(f"{base}/api/embed", json=payload)
+        if r.status_code == 404:
+            r = client.post(
+                f"{base}/api/embeddings",
+                json={"model": settings.embed_model, "prompt": text},
+            )
         r.raise_for_status()
-        return r.json()["embedding"]
+        data = r.json()
+        if "embeddings" in data:
+            return data["embeddings"][0]
+        return data["embedding"]

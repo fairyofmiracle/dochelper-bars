@@ -8,7 +8,7 @@ from telegram import BotCommand, InlineKeyboardButton, InlineKeyboardMarkup, Key
 from telegram.constants import ChatAction, ParseMode
 from telegram.ext import Application, CallbackQueryHandler, CommandHandler, ContextTypes, MessageHandler, filters
 
-from app.config import settings
+from app.config import settings, telegram_proxy_url
 from app.services.chat_async import ask_async
 from app.services.escalation import notify_support
 from app.services.session import append_message
@@ -312,15 +312,18 @@ def build_application() -> Application:
     token = settings.telegram_bot_token.strip()
     if not token:
         raise RuntimeError("TELEGRAM_BOT_TOKEN не задан")
-    app = (
+    builder = (
         Application.builder()
         .token(token)
         .connect_timeout(30.0)
         .read_timeout(30.0)
         .write_timeout(30.0)
-        .post_init(_post_init)
-        .build()
     )
+    proxy = telegram_proxy_url()
+    if proxy:
+        logger.info("Telegram proxy: %s", proxy)
+        builder = builder.proxy_url(proxy).get_updates_proxy_url(proxy)
+    app = builder.post_init(_post_init).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("help", help_cmd))
     app.add_handler(CommandHandler("operator", operator_cmd))
