@@ -22,46 +22,69 @@
         <span class="brand-product">DocHelper · Оператор</span>
       </a>
       <nav class="nav-tabs">
-        <button class="tab active" data-tab="queue">Очередь</button>
-        <button class="tab" data-tab="chat">Чат</button>
-        <button class="tab" data-tab="admin">Документы</button>
+        <button class="tab active" data-tab="conversations">Обращения</button>
+        <button class="tab" data-tab="docs">База знаний</button>
         <button class="tab" data-tab="stats">Аналитика</button>
       </nav>
     </div>
   </header>
 
+  <div id="status-bar" class="status-bar glass">
+    <span id="status-online" class="status-pill status-pill--ok">● Онлайн</span>
+    <span id="status-docs">Документов: …</span>
+    <span id="status-qdrant">Qdrant: …</span>
+    <span id="status-queue">В очереди: …</span>
+    <span id="status-telegram">Telegram: …</span>
+  </div>
+
   <main class="site-main">
-    <section id="queue" class="panel active">
-      <div class="section-head">
-        <h2>Ожидают оператора</h2>
-        <p class="hint">Эскалации из Telegram и Web — ответьте пользователю, история уже сохранена.</p>
-      </div>
-      <div id="queue-box" class="glass card-block">Загрузка…</div>
-    </section>
-
-    <section id="chat" class="panel">
-      <div class="section-head">
-        <h2>Тестовый чат</h2>
-        <p class="hint">Проверка RAG так же, как видят пользователи.</p>
-      </div>
-      <div class="chat-card glass">
-        <div id="messages" class="messages"></div>
-        <p class="faq-label">Частые темы</p>
-        <div id="faq-chips" class="faq-chips"></div>
-        <form id="chat-form" class="chat-form">
-          <div class="input-wrap">
-            <input id="chat-input" placeholder="Задайте вопрос…" autocomplete="off" />
+    <section id="conversations" class="panel active">
+      <div class="op-split glass card-block">
+        <aside class="session-list-wrap">
+          <div class="session-list-head">
+            <h2>Ожидают ответа</h2>
+            <span id="queue-badge" class="badge">0</span>
           </div>
-          <button type="submit" class="btn btn-primary">Отправить</button>
-        </form>
+          <p class="hint session-list-hint">Эскалации из Telegram и Web. Закрытые — для истории.</p>
+          <div id="session-list" class="session-list">Загрузка…</div>
+          <div class="session-list-head session-list-head--resolved">
+            <h2>Закрытые</h2>
+            <span id="resolved-badge" class="badge badge--muted">0</span>
+          </div>
+          <div id="resolved-list" class="session-list session-list--resolved">Загрузка…</div>
+        </aside>
+
+        <div class="dialog-wrap">
+          <div id="dialog-empty" class="dialog-empty">
+            <p>Выберите обращение слева</p>
+            <p class="hint">История диалога и поле ответа появятся здесь</p>
+          </div>
+
+          <div id="dialog-active" class="dialog-active hidden">
+            <header class="dialog-header">
+              <div>
+                <strong id="dialog-user">Пользователь</strong>
+                <span id="dialog-meta" class="hint"></span>
+              </div>
+              <button type="button" id="resolve-btn" class="btn btn-outline btn-sm">Закрыть обращение</button>
+            </header>
+            <div id="dialog-messages" class="messages dialog-messages"></div>
+            <div id="operator-quick" class="operator-quick"></div>
+            <form id="reply-form" class="reply-form dialog-reply">
+              <input type="text" id="reply-input" placeholder="Ответ по их вопросу…" autocomplete="off" required />
+              <button type="submit" class="btn btn-primary">Отправить</button>
+            </form>
+          </div>
+        </div>
       </div>
     </section>
 
-    <section id="admin" class="panel">
+    <section id="docs" class="panel">
       <div class="section-head">
-        <h2>Управление документами</h2>
-        <p class="hint">Загрузите .docx / .pdf / .md — файл будет проиндексирован в Qdrant.</p>
+        <h2>База знаний</h2>
+        <p class="hint">Загрузите или обновите .docx / .pdf / .md — файл сразу попадёт в Qdrant. Отдельная админка появится позже.</p>
       </div>
+      <div id="docs-alert" class="docs-alert hidden"></div>
       <div class="glass card-block">
         <form id="upload-form" class="upload-form">
           <label class="file-label">
@@ -69,8 +92,9 @@
             <span class="file-btn">Выбрать файл</span>
             <span class="file-name" id="file-name">Файл не выбран</span>
           </label>
-          <button type="submit" class="btn btn-primary">Загрузить и проиндексировать</button>
+          <button type="submit" class="btn btn-primary" id="upload-btn">Загрузить и проиндексировать</button>
         </form>
+        <p id="upload-status" class="upload-status hint"></p>
         <button id="reindex-btn" class="btn btn-secondary">Переиндексировать всё</button>
         <ul id="doc-list" class="doc-list"></ul>
       </div>
@@ -79,7 +103,7 @@
     <section id="stats" class="panel">
       <div class="section-head">
         <h2>Аналитика запросов</h2>
-        <p class="hint">Статистика автоответов, эскалаций и популярных тем.</p>
+        <p class="hint">Автоответы, эскалации и популярные темы.</p>
       </div>
       <div id="stats-box" class="stats-box glass">Загрузка…</div>
     </section>
@@ -88,6 +112,7 @@
   <footer class="site-footer">
     <span>АО «БАРС Груп» · Панель оператора</span>
     <a href="/">Веб-чат для пользователей</a>
+    <a href="/presentation">Презентация</a>
   </footer>
 
   <script src="/static/operator.js"></script>

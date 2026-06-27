@@ -166,14 +166,20 @@ def index_all(clear: bool = False) -> IndexStats:
 
 def delete_by_source(source: str) -> None:
     client = get_client()
-    client.delete(
-        collection_name=settings.qdrant_collection,
-        points_selector=qmodels.FilterSelector(
-            filter=qmodels.Filter(
-                must=[qmodels.FieldCondition(key="source", match=qmodels.MatchValue(value=source))]
-            )
-        ),
-    )
+    try:
+        names = {c.name for c in client.get_collections().collections}
+        if settings.qdrant_collection not in names:
+            return
+        client.delete(
+            collection_name=settings.qdrant_collection,
+            points_selector=qmodels.FilterSelector(
+                filter=qmodels.Filter(
+                    must=[qmodels.FieldCondition(key="source", match=qmodels.MatchValue(value=source))]
+                )
+            ),
+        )
+    except Exception as exc:
+        logger.debug("delete_by_source(%s) skipped: %s", source, exc)
 
 
 def collection_info() -> dict:

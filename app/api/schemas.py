@@ -29,5 +29,5 @@ class ChatResponse(BaseModel):
 
 class OperatorReplyRequest(BaseModel):
     session_id: str
-    message: str = Field(min_length=1, max_length=4000)
+    message: str = Field(default="", max_length=4000)
     resolve: bool = False

@@ -259,17 +259,17 @@
       <div class="qr-grid">
         <div class="qr-card qr-card--bot">
           <div class="qr-wrap qr-wrap--img">
-            <img src="presentation/qr-telegram.png" alt="QR Telegram @SUP_BARS_BOT" />
+            <img src="/static/presentation/qr-telegram.png" alt="QR Telegram @SUP_BARS_BOT" />
           </div>
           <h3>Telegram-бот</h3>
           <p id="link-bot"><a href="https://t.me/SUP_BARS_BOT" target="_blank">@SUP_BARS_BOT</a></p>
         </div>
         <div class="qr-card qr-card--web">
           <div class="qr-wrap qr-wrap--img">
-            <img src="presentation/qr-web.png" alt="QR Web-чат" />
+            <img src="/static/presentation/qr-web.png" alt="QR Web-чат" />
           </div>
           <h3>Web-чат</h3>
-          <p id="link-web"><a href="http://45.159.211.202:8026/" target="_blank">http://45.159.211.202:8026/</a></p>
+          <p id="link-web"><a href="http://139.100.227.156:8026/" target="_blank">http://139.100.227.156:8026/</a></p>
         </div>
       </div>
     </section>
@@ -306,7 +306,7 @@
           <div class="quote-box">«Как сбросить пароль?», «Где календарь в БО?», «Что делать новичку?» — оператор отвечает часами</div>
         </div>
         <div class="illus">
-          <img src="presentation/ill-problem.svg" alt="Перегруз" />
+          <img src="/static/presentation/ill-problem.svg" alt="Перегруз" />
         </div>
       </div>
     </section>
@@ -341,7 +341,7 @@
     <section class="slide" data-title="Решение">
       <div class="split">
         <div class="illus">
-          <img src="presentation/ill-solution.svg" alt="Чат с ботом" />
+          <img src="/static/presentation/ill-solution.svg" alt="Чат с ботом" />
         </div>
         <div>
           <h2>Наше решение</h2>
@@ -361,7 +361,7 @@
       <h2>Архитектура · закрытый контур</h2>
       <p style="margin-bottom:0.75rem"><strong style="color:var(--green)">Требование брифа:</strong> MML AI работает без интернета — данные не уходят наружу</p>
       <div class="illus illus--wide" style="margin-bottom:0.75rem">
-        <img src="presentation/ill-arch.svg" alt="Закрытый контур" />
+        <img src="/static/presentation/ill-arch.svg" alt="Закрытый контур" />
       </div>
       <div class="goals-grid" style="grid-template-columns:1fr 1fr 1fr">
         <div class="goal-card" style="--c:var(--green)">
@@ -421,7 +421,7 @@
           <p><code>scripts/test_brief_cases.py</code></p>
         </div>
         <div class="illus">
-          <img src="presentation/ill-metrics.svg" alt="94% авто" />
+          <img src="/static/presentation/ill-metrics.svg" alt="94% авто" />
         </div>
       </div>
     </section>
@@ -447,13 +447,13 @@
       <div class="qr-grid" style="margin-top:1rem;max-width:520px;grid-template-columns:1fr 1fr">
         <div class="qr-card qr-card--bot">
           <div class="qr-wrap qr-wrap--img">
-            <img src="presentation/qr-telegram.png" alt="QR Telegram" />
+            <img src="/static/presentation/qr-telegram.png" alt="QR Telegram" />
           </div>
           <h3>@SUP_BARS_BOT</h3>
         </div>
         <div class="qr-card qr-card--web">
           <div class="qr-wrap qr-wrap--img">
-            <img src="presentation/qr-web.png" alt="QR Web" />
+            <img src="/static/presentation/qr-web.png" alt="QR Web" />
           </div>
           <h3 id="link-web-2">Web-чат</h3>
         </div>
@@ -493,8 +493,8 @@
         links = await fetch("/api/demo-links").then((r) => r.json());
       } catch {
         links = {
-          web_chat: "http://45.159.211.202:8026/",
-          operator: "http://45.159.211.202:8026/operator",
+          web_chat: "http://139.100.227.156:8026/",
+          operator: "http://139.100.227.156:8026/operator",
           repo: "https://tatarsan.space/one_commit/bars_support_bot",
         };
       }

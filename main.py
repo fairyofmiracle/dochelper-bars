@@ -25,6 +25,7 @@ from app.api.admin import router as admin_router
 from app.api.analytics import router as analytics_router
 from app.api.chat import router as chat_router
 from app.api.operator import router as operator_router
+from app.branding import web_welcome_intro
 from app.config import settings
 from app.rag.image_store import resolve_doc_image
 from app.rag.indexer import collection_info, index_all
@@ -69,6 +70,13 @@ async def lifespan(app: FastAPI):
         logger.warning("Auto-index skipped: %s", exc)
 
     logger.info("All models ready — accepting questions")
+
+    try:
+        from app.services.operator_demo import seed_demo_sessions
+
+        await asyncio.to_thread(seed_demo_sessions)
+    except Exception as exc:
+        logger.warning("Operator demo seed skipped: %s", exc)
 
     tg_app = None
     if settings.telegram_enabled and settings.telegram_bot_token.strip():
@@ -141,6 +149,14 @@ async def download_document(filename: str):
     raise HTTPException(404, "Document not found")
 
 
+@app.get("/presentation")
+async def presentation_page():
+    path = STATIC / "presentation.html"
+    if path.exists():
+        return FileResponse(path)
+    return RedirectResponse("/")
+
+
 @app.get("/operator")
 async def operator_page():
     index = STATIC / "operator.html"
@@ -163,6 +179,11 @@ async def demo_links(request: Request):
     }
 
 
+@app.get("/api/web-welcome")
+async def web_welcome():
+    return web_welcome_intro()
+
+
 @app.get("/")
 async def index_page():
     index = STATIC / "index.html"
@@ -176,11 +197,12 @@ async def health():
     ollama_ok = False
     ollama_models: list[str] = []
     try:
-        async with httpx.AsyncClient(timeout=5.0) as client:
-            r = await client.get(f"{settings.ollama_base_url.rstrip('/')}/api/tags")
-            if r.status_code == 200:
-                ollama_ok = True
-                ollama_models = [m.get("name", "") for m in r.json().get("models", [])]
+        from app.llm.ollama_http import ollama_get
+
+        r = ollama_get(f"{settings.ollama_base_url.rstrip('/')}/api/tags", timeout=10.0)
+        if r.status_code == 200:
+            ollama_ok = True
+            ollama_models = [m.get("name", "") for m in r.json().get("models", [])]
     except httpx.HTTPError:
         pass
 
@@ -201,17 +223,34 @@ async def health():
 
     docs_count = len(list_document_files(settings.docs_dir, settings.upload_dir))
 
-    return {
-        "status": "ok",
-        "port": settings.app_port,
-        "llm": {
-            "provider": settings.llm_provider,
+    if settings.llm_provider == "gigachat":
+        giga_ok = bool(
+            settings.gigachat_credentials.strip()
+            or (
+                settings.gigachat_client_id.strip()
+                and settings.gigachat_client_secret.strip()
+            )
+        )
+        llm_info = {
+            "provider": "gigachat",
+            "model": settings.gigachat_model,
+            "configured": giga_ok,
+        }
+    else:
+        llm_info = {
+            "provider": "ollama",
             "model": settings.ollama_model,
             "vision_model": settings.ollama_vision_model or None,
             "ollama_url": settings.ollama_base_url,
+            "ollama_cloud": bool(settings.ollama_api_key.strip()),
             "ollama_reachable": ollama_ok,
             "models_installed": ollama_models,
-        },
+        }
+
+    return {
+        "status": "ok",
+        "port": settings.app_port,
+        "llm": llm_info,
         "embed_model": settings.embed_model,
         "qdrant_ok": qdrant_ok,
         "qdrant_points": qdrant_points,

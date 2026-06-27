@@ -28,24 +28,24 @@ function escapeHtml(s) {
     .replace(/"/g, "&quot;");
 }
 
-function renderSourceBlock(snippets, userQuestion) {
+function renderSourceBlock(snippets) {
   if (!snippets?.length) return null;
+  const unique = [];
+  const seen = new Set();
+  snippets.forEach((s) => {
+    if (!seen.has(s.source)) {
+      seen.add(s.source);
+      unique.push(s);
+    }
+  });
   const block = document.createElement("div");
-  block.className = "source-block";
-  const q = userQuestion ? `<p class="source-question"><span>Ваш вопрос:</span> ${escapeHtml(userQuestion)}</p>` : "";
-  const cards = snippets
-    .map((s) => {
-      const page = s.chunk_index >= 0 ? ` · фрагмент ${s.chunk_index + 1}` : "";
-      return `<article class="source-card">
-        <header>
-          <strong>${escapeHtml(s.source)}</strong>${page}
-          <a href="${escapeHtml(s.download_url)}" download class="source-dl">Скачать документ</a>
-        </header>
-        <p class="source-excerpt">${escapeHtml(s.excerpt)}</p>
-      </article>`;
-    })
-    .join("");
-  block.innerHTML = `${q}<p class="source-title">Фрагмент из документации</p>${cards}`;
+  block.className = "source-block source-block--compact";
+  block.innerHTML = `<p class="source-title">Источник</p><div class="source-links">${unique
+    .map(
+      (s) =>
+        `<a href="${escapeHtml(s.download_url)}" download class="source-pill" title="Скачать ${escapeHtml(s.source)}">${escapeHtml(s.source)}</a>`
+    )
+    .join("")}</div>`;
   return block;
 }
 
@@ -86,7 +86,7 @@ function addMsg(text, role, meta = "", needsOperator = false, isLoading = false,
     body.appendChild(gallery);
   }
 
-  const sourceEl = renderSourceBlock(snippets, userQuestion);
+  const sourceEl = renderSourceBlock(snippets);
   if (sourceEl) body.appendChild(sourceEl);
 
   if (meta) {
@@ -121,9 +121,7 @@ function removeLoadingEl(el) {
 
 function applyChatResponse(data, loadingEl, userText) {
   removeLoadingEl(loadingEl);
-  const meta =
-    `уверенность: ${(data.confidence * 100).toFixed(0)}%` +
-    (data.sources?.length ? ` · ${data.sources.join(", ")}` : "");
+  const meta = data.sources?.length ? data.sources.join(" · ") : "";
   addMsg(
     data.answer,
     "bot",
@@ -174,33 +172,6 @@ async function sendChat(text, escalate = false) {
   }
 }
 
-async function sendChatImage(file, caption = "") {
-  addMsg(caption || "[скриншот]", "user");
-  setChatBusy(true);
-  const loadingEl = addMsg("Анализирую изображение…", "bot", "", false, true);
-
-  try {
-    const fd = new FormData();
-    fd.append("file", file);
-    fd.append("message", caption || "Что на скриншоте? Подскажите по документации.");
-    fd.append("session_id", sessionId);
-    fd.append("user_label", "Web UI");
-
-    const res = await fetch("/api/chat/image", { method: "POST", body: fd });
-    if (!res.ok) {
-      const errText = await res.text();
-      throw new Error(errText || `HTTP ${res.status}`);
-    }
-    applyChatResponse(await res.json(), loadingEl, caption);
-  } catch (err) {
-    removeLoadingEl(loadingEl);
-    addMsg("Не удалось обработать изображение.", "bot", String(err.message || err), true);
-  } finally {
-    setChatBusy(false);
-    chatInput.focus();
-  }
-}
-
 function startOperatorPoll() {
   escalated = true;
   if (pollTimer) return;
@@ -215,7 +186,7 @@ async function pollOperatorMessages() {
     const ops = (data.messages || []).filter((m) => m.role === "operator");
     if (ops.length <= lastOperatorCount) return;
     for (let i = lastOperatorCount; i < ops.length; i++) {
-      addMsg(ops[i].content, "operator", "Ответ оператора");
+      addMsg(ops[i].content, "operator", "");
     }
     lastOperatorCount = ops.length;
   } catch {
@@ -233,31 +204,138 @@ document.getElementById("chat-form").addEventListener("submit", (e) => {
 
 document.getElementById("escalate-btn").addEventListener("click", () => sendChat("оператор", true));
 
-document.getElementById("chat-image").addEventListener("change", (e) => {
-  const file = e.target.files?.[0];
-  e.target.value = "";
-  if (!file) return;
-  const caption = chatInput.value.trim();
-  chatInput.value = "";
-  sendChatImage(file, caption);
-});
-
 const chips = document.getElementById("faq-chips");
 FAQ_CHIPS.forEach((q) => {
   const b = document.createElement("button");
   b.type = "button";
   b.className = "chip";
   b.textContent = q;
+  b.disabled = true;
   b.onclick = () => sendChat(q);
   chips.appendChild(b);
 });
 
-addMsg(
-  "Привет! Я DocHelper Барс.\n\n" +
-    "Я изучил документацию БАРС-Офис и корпоративных сервисов и готов ответить на ваши вопросы.\n\n" +
-    "Выберите тему ниже или напишите свой вопрос. Если понадобится живой человек — нажмите «Оператор».\n\n" +
-    "Чем могу помочь?",
-  "bot"
-);
+function setChatEnabled(enabled) {
+  chatInput.disabled = !enabled;
+  sendBtn.disabled = !enabled;
+  document.getElementById("escalate-btn").disabled = !enabled;
+  chips.querySelectorAll(".chip").forEach((chip) => {
+    chip.disabled = !enabled;
+  });
+}
 
-chatInput.focus();
+function showWelcomeMessage(text) {
+  addMsg(text || chatWelcomeText, "bot");
+  chatInput.focus();
+}
+
+let chatWelcomeText =
+  "Привет! Я DocHelper Барс.\n\n" +
+  "Я изучил документацию БАРС-Офис и готов ответить на ваши вопросы.\n\n" +
+  "Чем могу помочь?";
+
+function renderWelcomeIntro(intro, telegramUrl, telegramLabel) {
+  const tag = document.getElementById("welcome-tag");
+  const title = document.getElementById("welcome-title");
+  const lead = document.getElementById("welcome-lead");
+  const features = document.getElementById("welcome-features");
+  const hint = document.getElementById("welcome-hint");
+  const startBtn = document.getElementById("welcome-start");
+
+  if (tag) tag.textContent = intro.tag || "";
+  if (title) {
+    title.innerHTML =
+      escapeHtml(intro.title || "") +
+      ' <span class="hero-accent">' +
+      escapeHtml(intro.title_accent || "") +
+      "</span>";
+  }
+  if (lead) lead.textContent = intro.lead || "";
+  if (hint) hint.textContent = intro.hint || "";
+  if (startBtn) startBtn.textContent = intro.button || "Начать диалог";
+  if (intro.chat_welcome) chatWelcomeText = intro.chat_welcome;
+
+  if (features) {
+    features.innerHTML = "";
+    (intro.features || []).forEach((line) => {
+      const li = document.createElement("li");
+      li.textContent = line;
+      features.appendChild(li);
+    });
+    if (intro.telegram_prefix) {
+      const li = document.createElement("li");
+      li.appendChild(document.createTextNode(intro.telegram_prefix + " "));
+      const a = document.createElement("a");
+      a.id = "welcome-telegram";
+      a.href = telegramUrl || "https://t.me/SUP_BARS_BOT";
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      a.textContent = telegramLabel || "Telegram";
+      li.appendChild(a);
+      features.appendChild(li);
+    }
+  }
+}
+
+function closeWelcome() {
+  const overlay = document.getElementById("welcome-overlay");
+  const page = document.getElementById("page-content");
+  if (!overlay) return;
+
+  overlay.classList.add("is-closing");
+  document.body.classList.remove("welcome-open");
+  page?.removeAttribute("aria-hidden");
+
+  overlay.addEventListener(
+    "animationend",
+    () => {
+      overlay.hidden = true;
+    },
+    { once: true }
+  );
+
+  setChatEnabled(true);
+  if (!messages.children.length) showWelcomeMessage();
+  else chatInput.focus();
+}
+
+setChatEnabled(false);
+
+document.getElementById("welcome-start")?.addEventListener("click", closeWelcome);
+
+(async function initPage() {
+  let intro = {};
+  let links = {};
+  try {
+    [intro, links] = await Promise.all([
+      fetch("/api/web-welcome").then((r) => r.json()),
+      fetch("/api/demo-links").then((r) => r.json()),
+    ]);
+  } catch {
+    intro = {
+      tag: "Королева Кода · АО «Барс Групп»",
+      title: "DocHelper",
+      title_accent: "Барс",
+      lead: "AI-агент первой линии поддержки — отвечает по корпоративной документации и показывает источник ответа.",
+      features: [
+        "Поиск по базе знаний БАРС-Офис и внутренним регламентам",
+        "Структурированный ответ со ссылкой на документ-источник",
+        "Если нужен человек — переключение на оператора в один клик",
+      ],
+      telegram_prefix: "Тот же помощник доступен в",
+      hint: "Задайте вопрос текстом или выберите тему из подсказок — попробуйте прямо сейчас.",
+      button: "Начать диалог",
+    };
+  }
+
+  const telegramUrl = links.telegram || "https://t.me/SUP_BARS_BOT";
+  const telegramUser = telegramUrl.replace(/^https:\/\/t\.me\//, "@");
+
+  renderWelcomeIntro(intro, telegramUrl, telegramUser || "Telegram");
+
+  const footerLink = document.getElementById("link-telegram");
+  if (footerLink && links.telegram) {
+    footerLink.href = links.telegram;
+    footerLink.textContent = "Telegram " + telegramUser;
+  }
+})();

@@ -4,14 +4,12 @@ from __future__ import annotations
 import re
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from pathlib import Path
 
 from app.branding import EMPTY_QUESTION_MSG, ESCALATION_MSG, LOW_CONFIDENCE_MSG as _LOW_CONFIDENCE_MSG
 from app.config import ESCALATION_WORDS, settings
 from app.llm.client import generate_answer
-from app.rag.docx_sections import values_image_names
 from app.rag.image_store import image_api_url
-from app.rag.search import SearchHit, best_confidence, find_doc_images, search, search_images
+from app.rag.search import SearchHit, best_confidence, search
 from app.rag.vision import describe_user_image, vision_ready
 from app.services.analytics import record_query
 
@@ -35,7 +33,6 @@ VISUAL_KEYWORDS = (
     "фильтр",
     "где найти",
     "как выгляд",
-    "ценност",
 )
 
 
@@ -73,26 +70,17 @@ def _wants_visual(question: str) -> bool:
     return any(k in low for k in VISUAL_KEYWORDS)
 
 
-def _pick_images(hits: list[SearchHit], question: str, text_hits: list[SearchHit]) -> list[str]:
-    """Картинки из docx: приоритет — найденные иллюстрации из того же документа."""
+def _pick_images(hits: list[SearchHit], question: str) -> list[str]:
     want_visual = _wants_visual(question)
     urls: list[str] = []
     seen: set[str] = set()
-
-    primary_source = text_hits[0].source if text_hits else ""
-
-    for h in sorted(hits, key=lambda x: -x.score):
+    for h in hits:
         if not h.image_path:
             continue
-        if h.kind == "image":
-            pass
-        elif not want_visual:
+        if h.kind != "image" and not want_visual:
             continue
-        elif primary_source and h.source != primary_source:
+        if h.kind != "image" and h.score < settings.confidence_threshold * 0.9:
             continue
-        elif h.score < settings.confidence_threshold * 0.85:
-            continue
-
         url = image_api_url(h.image_path)
         if url not in seen:
             seen.add(url)
@@ -114,10 +102,9 @@ def _doc_download_url(source: str) -> str:
     return f"/api/documents/{quote(source)}"
 
 
-def _build_snippets(hits: list[SearchHit], question: str = "") -> list[SourceSnippet]:
+def _build_snippets(hits: list[SearchHit]) -> list[SourceSnippet]:
     seen: set[str] = set()
     snippets: list[SourceSnippet] = []
-    terms = [w for w in re.findall(r"[\w\u0400-\u04FF]+", question.lower()) if len(w) >= 5]
     for h in hits:
         if not h.source or h.kind != "text":
             continue
@@ -125,141 +112,41 @@ def _build_snippets(hits: list[SearchHit], question: str = "") -> list[SourceSni
         if key in seen:
             continue
         seen.add(key)
-        excerpt = _snippet_excerpt(h.text.strip(), terms)
         snippets.append(
             SourceSnippet(
                 source=h.source,
-                excerpt=excerpt,
+                excerpt="",
                 chunk_index=h.chunk_index,
                 score=h.score,
                 download_url=_doc_download_url(h.source),
             )
         )
-    return snippets[:3]
+    return snippets[:2]
 
 
-def _snippet_excerpt(text: str, terms: list[str], max_len: int = 320) -> str:
-    if len(text) <= max_len:
-        return text
-    low = text.lower()
-    pos = -1
-    for term in terms:
-        idx = low.find(term)
-        if idx >= 0:
-            pos = idx
-            break
-    if pos < 0:
-        for marker in ("ценност", "бизнес-процесс", "фильтр", "командиров"):
-            idx = low.find(marker)
-            if idx >= 0:
-                pos = idx
-                break
-    if pos < 0:
-        return text[: max_len - 1] + "…"
-    start = max(0, pos - 50)
-    piece = text[start : start + max_len].strip()
-    if start > 0:
-        piece = "…" + piece
-    if start + max_len < len(text):
-        piece = piece.rstrip() + "…"
-    return piece
-
-
-def _answer_body_without_source(answer: str) -> str:
+def _polish_answer(answer: str) -> str:
+    """Убираем служебные строки — источник показывает UI."""
     lines: list[str] = []
     for line in answer.splitlines():
-        stripped = line.strip()
-        if not stripped or stripped == "---":
+        low = line.strip().lower()
+        if low.startswith("источник:") or low.startswith("📎"):
             continue
-        low = stripped.lower()
-        if low.startswith("источник:") or ("источник" in low and stripped.startswith("📎")):
+        if re.match(r"^exported on\b", low):
             continue
-        lines.append(stripped)
-    return "\n".join(lines)
-
-
-def _is_insufficient_answer(answer: str) -> bool:
-    body = _answer_body_without_source(answer)
-    if len(body) < 35:
-        return True
-    low = body.lower()
-    negative = (
-        "нет информации",
-        "нет данных",
-        "не нашёл",
-        "не нашел",
-        "не найден",
-        "нет в контексте",
-        "нет ответа",
-        "не могу ответить",
-        "отсутствует в",
-        "отсутствует информация",
-        "не содержит",
-        "нет раздела",
-        "не указан",
-        "не указаны",
-        "не приведен",
-        "не приведены",
-        "в представленном контексте",
-        "в данном фрагменте",
-        "в контексте нет",
-    )
-    return any(p in low for p in negative)
-
-
-def _hits_match_question(question: str, hits: list[SearchHit]) -> bool:
-    terms = [w for w in re.findall(r"[\w\u0400-\u04FF]+", question.lower()) if len(w) >= 5]
-    if not terms:
-        return True
-    blob = " ".join(h.text.lower() for h in hits if h.kind == "text")
-    return any(t in blob for t in terms)
-
-
-def _attach_values_images(hits: list[SearchHit], image_hits: list[SearchHit], question: str) -> list[str]:
-    if "ценност" not in question.lower():
-        return []
-    if not any("ценност" in h.text.lower() for h in hits):
-        return []
-    source = next((h.source for h in hits if h.source), "")
-    names = values_image_names(source)
-    if not names:
-        return []
-    by_name = {Path(h.image_path).name: h for h in image_hits if h.image_path}
-    urls: list[str] = []
-    for name in names[:3]:
-        hit = by_name.get(name)
-        if hit and hit.image_path:
-            urls.append(image_api_url(hit.image_path))
-    if urls:
-        return urls
-    extra = find_doc_images(source, names[:3])
-    for h in extra:
-        if h.image_path:
-            urls.append(image_api_url(h.image_path))
-    return urls[:3]
-
-
-def _strip_source_lines(answer: str) -> str:
-    lines: list[str] = []
-    for line in answer.splitlines():
-        stripped = line.strip()
-        if not stripped:
+        if low in {"содержание", "content"}:
             continue
-        low = stripped.lower()
-        if low.startswith("источник:") or ("источник" in low and stripped.startswith("📎")):
-            continue
-        lines.append(line)
-    return "\n".join(lines).rstrip()
-
-
-def _ensure_source_line(answer: str, source: str) -> str:
-    """Источник всегда из RAG-поиска, не из фантазии LLM."""
-    if not source:
-        return answer
-    body = _strip_source_lines(answer)
-    if body:
-        return f"{body}\n\n📎 Источник: {source}"
-    return f"📎 Источник: {source}"
+        cleaned = re.sub(r"^[📋📝💡📎]\s*", "", line.strip())
+        cleaned = re.sub(r"\*\*(.+?)\*\*", r"\1", cleaned)
+        cleaned = re.sub(
+            r"^(краткий ответ|подробности|важно)\s*[—\-:]\s*",
+            "",
+            cleaned,
+            flags=re.IGNORECASE,
+        )
+        if cleaned:
+            lines.append(cleaned)
+    text = "\n".join(lines).strip()
+    return re.sub(r"\n{3,}", "\n\n", text)
 
 
 def ask(
@@ -278,15 +165,10 @@ def ask(
     if on_phase:
         on_phase("search")
     hits = search(q)
+    confidence = best_confidence(hits)
     sources = list(dict.fromkeys(h.source for h in hits if h.source))
-    img_k = 40 if "ценност" in q.lower() else 2
-    image_hits = search_images(q, prefer_sources=sources, top_k=img_k, min_score=0.55)
-    confidence = best_confidence(hits + image_hits)
-    if not _hits_match_question(q, hits):
-        confidence = min(confidence, settings.confidence_threshold - 0.05)
-    snippets = _build_snippets(hits, q)
-    images = _pick_images(image_hits + hits, q, hits)
-    images = list(dict.fromkeys(images + _attach_values_images(hits, image_hits, q)))
+    snippets = _build_snippets(hits)
+    images = _pick_images(hits, q)
 
     if confidence < settings.confidence_threshold or not hits:
         record_query(q, False, confidence)
@@ -294,11 +176,11 @@ def ask(
             LOW_CONFIDENCE_MSG, confidence, sources, False, True, images, snippets, q
         )
 
-    context = _format_context(hits + image_hits)
+    context = _format_context(hits)
     try:
         if on_phase:
             on_phase("llm")
-        answer = generate_answer(q, context)
+        answer = _polish_answer(generate_answer(q, context))
     except Exception as exc:
         record_query(q, False, confidence)
         return ChatResult(
@@ -311,24 +193,8 @@ def ask(
             snippets,
             q,
         )
-
-    if _is_insufficient_answer(answer):
-        record_query(q, False, min(confidence, settings.confidence_threshold - 0.01))
-        return ChatResult(
-            LOW_CONFIDENCE_MSG,
-            min(confidence, settings.confidence_threshold - 0.01),
-            sources,
-            False,
-            True,
-            images,
-            snippets,
-            q,
-        )
-
-    answer = _ensure_source_line(answer, sources[0] if sources else "")
     if images:
-        if "иллюстрац" not in answer.lower() and "скрин" not in answer.lower():
-            answer += "\n\n📷 К ответу приложена иллюстрация из документации."
+        answer += "\n\nЕсли нужно — ниже приложила схему из документации."
     record_query(q, True, confidence, sources[0] if sources else "")
     return ChatResult(answer, confidence, sources, False, False, images, snippets, q)
 

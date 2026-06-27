@@ -19,6 +19,7 @@ services:
     restart: unless-stopped
 
   ollama:
+    profiles: ["local-llm"]
     image: ollama/ollama:latest
     platform: linux/amd64
     ports:

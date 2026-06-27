@@ -58,10 +58,11 @@ def _ollama_vision(image_bytes: bytes, prompt: str) -> str:
         "stream": False,
     }
     try:
-        with httpx.Client(timeout=180.0) as client:
-            r = client.post(url, json=payload)
-            r.raise_for_status()
-            return r.json()["message"]["content"].strip()
+        from app.llm.ollama_http import ollama_post
+
+        r = ollama_post(url, json=payload, timeout=180.0)
+        r.raise_for_status()
+        return r.json()["message"]["content"].strip()
     except Exception as exc:
         logger.warning("vision failed: %s", exc)
         return ""

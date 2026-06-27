@@ -22,8 +22,10 @@ def _check_pin(pin: str | None) -> None:
 @router.get("/queue")
 async def operator_queue(x_operator_pin: str | None = Header(default=None)):
     _check_pin(x_operator_pin)
-    waiting = [q for q in list_queue() if q.get("status") == "waiting"]
-    return {"queue": waiting, "total": len(waiting)}
+    all_items = list_queue()
+    waiting = [q for q in all_items if q.get("status") == "waiting"]
+    resolved = [q for q in all_items if q.get("status") == "resolved"]
+    return {"queue": waiting, "resolved": resolved, "total": len(waiting)}
 
 
 @router.get("/sessions")
@@ -35,9 +37,11 @@ async def operator_sessions(x_operator_pin: str | None = Header(default=None)):
 @router.post("/reply")
 async def operator_reply(body: OperatorReplyRequest, x_operator_pin: str | None = Header(default=None)):
     _check_pin(x_operator_pin)
-    if not body.message.strip():
+    text = body.message.strip()
+    if not text and not body.resolve:
         raise HTTPException(400, "Пустое сообщение")
-    append_message(body.session_id, "operator", body.message.strip())
+    if text:
+        append_message(body.session_id, "operator", text)
     if body.resolve:
         resolve(body.session_id)
     return {"ok": True}

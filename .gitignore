@@ -25,6 +25,7 @@ data/docs/*.docx
 data/docs/*.pdf
 
 # Caches / models (on D: drive, never commit)
+D:/
 .cache/
 models/
 .huggingface/

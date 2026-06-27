@@ -15,9 +15,12 @@ class Settings(BaseSettings):
 
     llm_provider: str = "ollama"
     ollama_base_url: str = "http://127.0.0.1:11434"
+    ollama_api_key: str = ""
     ollama_model: str = "qwen2.5:3b-instruct"
     ollama_vision_model: str = ""
     gigachat_credentials: str = ""
+    gigachat_client_id: str = ""
+    gigachat_client_secret: str = ""
     gigachat_model: str = "GigaChat"
     gigachat_scope: str = "GIGACHAT_API_PERS"
 

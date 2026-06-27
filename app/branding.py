@@ -24,6 +24,41 @@ def welcome_message() -> str:
     )
 
 
+# ── Вступительное окно Web-чата (до кнопки «Начать диалог») ──
+# Редактируйте тексты здесь — они подтягиваются в static/index.html через /api/web-welcome
+
+WEB_WELCOME_TAG = "Королева Кода · АО «Барс Групп»"
+WEB_WELCOME_TITLE = "DocHelper"
+WEB_WELCOME_TITLE_ACCENT = "Барс"
+WEB_WELCOME_LEAD = (
+    "AI-агент первой линии поддержки — отвечает по корпоративной документации "
+    "и показывает источник ответа."
+)
+WEB_WELCOME_FEATURES: tuple[str, ...] = (
+    "Поиск по базе знаний БАРС-Офис и внутренним регламентам",
+    "Структурированный ответ со ссылкой на документ-источник",
+    "Если нужен человек — переключение на оператора в один клик",
+)
+WEB_WELCOME_TELEGRAM_PREFIX = "Тот же помощник доступен в"
+WEB_WELCOME_HINT = "Задайте вопрос текстом или выберите тему из подсказок — попробуйте прямо сейчас."
+WEB_WELCOME_BUTTON = "Начать диалог"
+
+
+def web_welcome_intro() -> dict[str, object]:
+    """Тексты вступительного окна и приветствия в чате для Web UI."""
+    return {
+        "tag": WEB_WELCOME_TAG,
+        "title": WEB_WELCOME_TITLE,
+        "title_accent": WEB_WELCOME_TITLE_ACCENT,
+        "lead": WEB_WELCOME_LEAD,
+        "features": list(WEB_WELCOME_FEATURES),
+        "telegram_prefix": WEB_WELCOME_TELEGRAM_PREFIX,
+        "hint": WEB_WELCOME_HINT,
+        "button": WEB_WELCOME_BUTTON,
+        "chat_welcome": welcome_message(),
+    }
+
+
 START_HINT = (
     "*С чего начать:*\n\n"
     "1. Напишите вопрос текстом, отправьте *голосовое* или *скриншот*\n"
@@ -36,7 +71,13 @@ LOW_CONFIDENCE_MSG = (
 )
 
 ESCALATION_MSG = (
-    "Передаю диалог оператору. История сохранена — специалист подключится в ближайшее время."
+    "Понял, подключаю специалиста поддержки — он уже видит нашу переписку и скоро ответит."
 )
 
 EMPTY_QUESTION_MSG = "Пожалуйста, задайте вопрос по документации — я постараюсь помочь."
+
+OPERATOR_QUICK_REPLIES: tuple[str, ...] = (
+    "Здравствуйте! Вижу ваш вопрос — сейчас разберусь и помогу.",
+    "Подключился к диалогу, изучаю ваш запрос по документации.",
+    "Спасибо за ожидание! Вот что удалось выяснить:",
+)
