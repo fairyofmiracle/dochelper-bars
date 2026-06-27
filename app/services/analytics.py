@@ -19,7 +19,7 @@ _mem_esc = 0
 _mem_log: deque = deque(maxlen=500)
 _redis_ok: bool | None = None
 
-_SKIP_QUESTIONS = {"/operator", "оператор", "❓ задать вопрос", "❌ отмена", "🧑‍💼 переключить на оператора"}
+_SKIP_QUESTIONS = {"/operator", "оператор", "задать вопрос", "отмена", "переключить на оператора"}
 
 
 def _normalize_question(text: str) -> str:

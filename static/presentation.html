@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DocHelper Барс — презентация</title>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #020713;
+      --accent: #0084ff;
+      --cyan: #00c2ff;
+      --text: #f0f4fc;
+      --muted: #94a3b8;
+      --card: rgba(18, 28, 50, 0.9);
+      --border: rgba(255,255,255,0.08);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; overflow: hidden; font-family: Manrope, system-ui, sans-serif; background: var(--bg); color: var(--text); }
+    .deck { height: 100vh; position: relative; }
+    .slide {
+      position: absolute; inset: 0; padding: 3rem 4rem;
+      display: none; flex-direction: column; justify-content: center;
+      background: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(0,132,255,0.15), transparent);
+    }
+    .slide.active { display: flex; animation: in 0.4s ease; }
+    @keyframes in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+    h1 { font-size: clamp(2rem, 5vw, 3.2rem); margin: 0 0 0.5rem; letter-spacing: -0.03em; }
+    h2 { font-size: clamp(1.5rem, 3vw, 2.2rem); margin: 0 0 1rem; color: var(--cyan); }
+    p, li { font-size: 1.15rem; line-height: 1.6; color: var(--muted); }
+    ul { margin: 0.5rem 0; padding-left: 1.4rem; }
+    li { margin: 0.35rem 0; }
+    .accent { background: linear-gradient(135deg, var(--accent), var(--cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .tag { display: inline-block; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--cyan); margin-bottom: 1rem; }
+    .meta { font-size: 1rem; color: var(--muted); margin-top: 1.5rem; }
+    pre {
+      background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+      padding: 1.25rem; font-size: 0.85rem; line-height: 1.45; overflow: auto; color: #cbd5e1;
+    }
+    table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
+    th, td { padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--border); text-align: left; font-size: 0.95rem; }
+    th { color: var(--muted); font-size: 0.8rem; text-transform: uppercase; }
+    .agents { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-top: 0.75rem; }
+    .agent {
+      background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1rem;
+      border-top: 3px solid var(--accent);
+    }
+    .agent strong { display: block; font-size: 1rem; margin-bottom: 0.35rem; color: var(--text); }
+    .agent span { font-size: 0.88rem; color: var(--muted); line-height: 1.45; }
+    .big { font-size: 2.5rem; font-weight: 800; color: var(--accent); }
+    .nav {
+      position: fixed; bottom: 1.25rem; right: 1.5rem; display: flex; gap: 0.5rem; z-index: 10;
+    }
+    .nav button {
+      background: var(--card); border: 1px solid var(--border); color: var(--text);
+      padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-family: inherit; font-weight: 600;
+    }
+    .nav button:hover { border-color: var(--accent); }
+    .progress {
+      position: fixed; bottom: 0; left: 0; height: 3px; background: linear-gradient(90deg, var(--accent), var(--cyan));
+      transition: width 0.3s;
+    }
+    .logo-row { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+    .logo-row img { width: 64px; height: 64px; }
+  </style>
+</head>
+<body>
+  <div class="progress" id="progress"></div>
+  <div class="deck" id="deck">
+
+    <section class="slide active">
+      <span class="tag">one_commit · Королева Кода · Барс Групп</span>
+      <div class="logo-row">
+        <img src="/static/bars-mascot.svg" alt="Барс" />
+        <div>
+          <h1><span class="accent">DocHelper Барс</span></h1>
+          <p>AI-агент первой линии поддержки</p>
+        </div>
+      </div>
+      <p class="meta">~7 мин · 5 demo + 2 слайда / вопросы</p>
+    </section>
+
+    <section class="slide">
+      <h2>Проблема</h2>
+      <p><strong style="color:var(--text)">Служба поддержки тонет в однотипных вопросах</strong></p>
+      <ul>
+        <li>Документация объёмная и постоянно обновляется</li>
+        <li>Пользователи не ищут сами — пишут оператору</li>
+        <li>Вне рабочего времени вопросы «висят» до утра</li>
+        <li>В пик (релизы, акции) команда не справляется</li>
+        <li>Операторы копируют одни и те же ссылки из PDF</li>
+      </ul>
+      <p><strong style="color:var(--cyan)">→ Нужна первая линия, которая отвечает мгновенно и не выдумывает</strong></p>
+    </section>
+
+    <section class="slide">
+      <h2>Решение</h2>
+      <p><strong style="color:var(--text)">DocHelper Барс — умный помощник в Telegram и Web</strong></p>
+      <ul>
+        <li>Понимает вопрос на естественном языке и <strong style="color:var(--text)">голосом</strong></li>
+        <li>Ищет ответ в актуальной документации (<strong style="color:var(--text)">RAG</strong>)</li>
+        <li>Даёт ответ с <strong style="color:var(--text)">источником</strong> и ссылкой на документ</li>
+        <li>При низкой уверенности — <strong style="color:var(--text)">переключает на оператора</strong></li>
+      </ul>
+      <p>Цель брифа: ≥ 40% автоматизации · <span class="big">94%</span> на тест-кейсах (16/17)</p>
+    </section>
+
+    <section class="slide">
+      <h2>Архитектура</h2>
+      <pre>┌─────────────┐     ┌──────────────┐     ┌─────────┐
+│  Telegram   │────▶│   FastAPI    │────▶│ Qdrant  │
+│  + Web UI   │     │   (RAG)      │     │ (e5)    │
+└─────────────┘     └──────┬───────┘     └─────────┘
+                           │
+              ┌────────────┼────────────┐
+              ▼            ▼            ▼
+         GigaChat      Ollama       Whisper
+         (демо)    (закрытый контур)  (голос)
+                           ▼
+                    Ответ + Источник + Скачать docx
+                           │
+              confidence &lt; порог? → Эскалация → Support</pre>
+      <p>Python · FastAPI · Qdrant · Redis · Docker · GigaChat · Ollama · Whisper</p>
+    </section>
+
+    <section class="slide">
+      <h2>MVP: что реализовано</h2>
+      <table>
+        <tr><th>Функция</th><th>Статус</th></tr>
+        <tr><td>Telegram, текст + кнопки частых тем</td><td>✓</td></tr>
+        <tr><td>Голос → Whisper → ответ</td><td>✓</td></tr>
+        <tr><td>RAG по docx/pdf/md + иллюстрации</td><td>✓</td></tr>
+        <tr><td>Ответ + источник + скачать документ</td><td>✓</td></tr>
+        <tr><td>Confidence + оператор + web-панель</td><td>✓</td></tr>
+        <tr><td>Web-чат + аналитика + 4 документа кейса</td><td>✓</td></tr>
+      </table>
+    </section>
+
+    <section class="slide">
+      <h2>Demo-сценарий (live)</h2>
+      <ol style="padding-left:1.4rem;color:var(--muted);font-size:1.1rem;line-height:1.7">
+        <li><strong style="color:var(--text)">/start</strong> → подсказка и меню частых тем</li>
+        <li><em>«Как работает фильтр документа?»</em> → ответ + Functionalnie.docx + скачать</li>
+        <li><strong style="color:var(--text)">Голосовое:</strong> «Кто согласовывает БП Командировка?»</li>
+        <li><strong style="color:var(--text)">Web → Аналитика:</strong> 94% авто, топ вопросов</li>
+        <li><strong style="color:var(--text)">/operator</strong> → панель дежурного отвечает пользователю</li>
+      </ol>
+    </section>
+
+    <section class="slide">
+      <h2>AI-агенты</h2>
+      <p>Не chatbot — <strong style="color:var(--text)">orchestrated AI pipeline</strong></p>
+      <div class="agents">
+        <div class="agent"><strong>Speech</strong><span>Whisper: голос → текст</span></div>
+        <div class="agent"><strong>Retriever</strong><span>e5 + Qdrant: поиск фрагментов</span></div>
+        <div class="agent"><strong>Generator</strong><span>GigaChat/Ollama: ответ по контексту</span></div>
+        <div class="agent"><strong>Evaluator</strong><span>Confidence: авто или оператор</span></div>
+        <div class="agent"><strong>Escalation</strong><span>История → support-чат + web-очередь</span></div>
+        <div class="agent"><strong>Analytics</strong><span>Метрики, слабые места документации</span></div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <h2>Закрытый контур</h2>
+      <table>
+        <tr><th>Режим</th><th>Когда</th></tr>
+        <tr><td><strong>Ollama</strong> + local embeddings</td><td>Продакшен, закрытый контур</td></tr>
+        <tr><td><strong>GigaChat</strong></td><td>Быстрое demo на хакатоне</td></tr>
+        <tr><td>Переключение</td><td>одна строка в .env</td></tr>
+      </table>
+      <p style="margin-top:1rem">Embeddings, Qdrant, Redis, Whisper — локально</p>
+    </section>
+
+    <section class="slide">
+      <h2>Метрики</h2>
+      <ul>
+        <li>17 тест-кейсов из брифа заказчика</li>
+        <li>16 автоматических ответов (<strong style="color:var(--accent)">94%</strong>)</li>
+        <li>1 корректная эскалация (нет данных в базе)</li>
+        <li>Среднее время ответа: 1–2 сек (GigaChat)</li>
+        <li>Каждый ответ: confidence + источник + фрагмент документа</li>
+      </ul>
+      <p><code>scripts/test_brief_cases.py</code></p>
+    </section>
+
+    <section class="slide">
+      <h2>Roadmap</h2>
+      <table>
+        <tr><th>Этап</th><th>Функция</th></tr>
+        <tr><td>v1.1</td><td>Git webhook → auto-reindex</td></tr>
+        <tr><td>v1.2</td><td>Jira / Usedesk — тикеты из диалога</td></tr>
+        <tr><td>v1.3</td><td>MAX-бот</td></tr>
+        <tr><td>v1.4</td><td>Trend-аналитика: дыры в документации</td></tr>
+      </table>
+      <p style="margin-top:1rem"><strong style="color:var(--text)">MVP готов к пилоту на документации Барс Груп</strong></p>
+    </section>
+
+    <section class="slide">
+      <span class="tag">Спасибо</span>
+      <h1><span class="accent">DocHelper Барс</span></h1>
+      <p>one_commit · Королева Кода · Барс Групп</p>
+      <ul>
+        <li>Demo: Telegram-бот + http://127.0.0.1:8026</li>
+        <li>Панель оператора: /operator</li>
+        <li>Презентация: /presentation</li>
+      </ul>
+      <p class="meta"><strong style="color:var(--text);font-size:1.5rem">Вопросы?</strong></p>
+    </section>
+  </div>
+
+  <div class="nav">
+    <button type="button" id="prev">←</button>
+    <button type="button" id="next">→</button>
+  </div>
+
+  <script>
+    const slides = [...document.querySelectorAll(".slide")];
+    let i = 0;
+    const progress = document.getElementById("progress");
+    function show(n) {
+      i = (n + slides.length) % slides.length;
+      slides.forEach((s, j) => s.classList.toggle("active", j === i));
+      progress.style.width = ((i + 1) / slides.length * 100) + "%";
+    }
+    document.getElementById("prev").onclick = () => show(i - 1);
+    document.getElementById("next").onclick = () => show(i + 1);
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowRight" || e.key === " ") { e.preventDefault(); show(i + 1); }
+      if (e.key === "ArrowLeft") show(i - 1);
+    });
+    show(0);
+  </script>
+</body>
+</html>

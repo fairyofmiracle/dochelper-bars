@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DocHelper · Панель оператора</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body class="operator-mode">
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="bg-glow bg-glow--1" aria-hidden="true"></div>
+  <div class="bg-glow bg-glow--2" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="/">
+        <img src="/static/bars-logo.svg" alt="БАРС Груп" class="brand-logo" width="88" height="28" />
+        <span class="brand-divider"></span>
+        <span class="brand-product">DocHelper · Оператор</span>
+      </a>
+      <nav class="nav-tabs">
+        <button class="tab active" data-tab="queue">Очередь</button>
+        <button class="tab" data-tab="chat">Чат</button>
+        <button class="tab" data-tab="admin">Документы</button>
+        <button class="tab" data-tab="stats">Аналитика</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="site-main">
+    <section id="queue" class="panel active">
+      <div class="section-head">
+        <h2>Ожидают оператора</h2>
+        <p class="hint">Эскалации из Telegram и Web — ответьте пользователю, история уже сохранена.</p>
+      </div>
+      <div id="queue-box" class="glass card-block">Загрузка…</div>
+    </section>
+
+    <section id="chat" class="panel">
+      <div class="section-head">
+        <h2>Тестовый чат</h2>
+        <p class="hint">Проверка RAG так же, как видят пользователи.</p>
+      </div>
+      <div class="chat-card glass">
+        <div id="messages" class="messages"></div>
+        <p class="faq-label">Частые темы</p>
+        <div id="faq-chips" class="faq-chips"></div>
+        <form id="chat-form" class="chat-form">
+          <div class="input-wrap">
+            <input id="chat-input" placeholder="Задайте вопрос…" autocomplete="off" />
+          </div>
+          <button type="submit" class="btn btn-primary">Отправить</button>
+        </form>
+      </div>
+    </section>
+
+    <section id="admin" class="panel">
+      <div class="section-head">
+        <h2>Управление документами</h2>
+        <p class="hint">Загрузите .docx / .pdf / .md — файл будет проиндексирован в Qdrant.</p>
+      </div>
+      <div class="glass card-block">
+        <form id="upload-form" class="upload-form">
+          <label class="file-label">
+            <input type="file" id="file-input" accept=".docx,.pdf,.md,.txt" />
+            <span class="file-btn">Выбрать файл</span>
+            <span class="file-name" id="file-name">Файл не выбран</span>
+          </label>
+          <button type="submit" class="btn btn-primary">Загрузить и проиндексировать</button>
+        </form>
+        <button id="reindex-btn" class="btn btn-secondary">Переиндексировать всё</button>
+        <ul id="doc-list" class="doc-list"></ul>
+      </div>
+    </section>
+
+    <section id="stats" class="panel">
+      <div class="section-head">
+        <h2>Аналитика запросов</h2>
+        <p class="hint">Статистика автоответов, эскалаций и популярных тем.</p>
+      </div>
+      <div id="stats-box" class="stats-box glass">Загрузка…</div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <span>АО «БАРС Груп» · Панель оператора</span>
+    <a href="/">Веб-чат для пользователей</a>
+  </footer>
+
+  <script src="/static/operator.js"></script>
+</body>
+</html>

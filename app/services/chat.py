@@ -36,6 +36,15 @@ VISUAL_KEYWORDS = (
 
 
 @dataclass
+class SourceSnippet:
+    source: str
+    excerpt: str
+    chunk_index: int
+    score: float
+    download_url: str
+
+
+@dataclass
 class ChatResult:
     answer: str
     confidence: float
@@ -43,6 +52,8 @@ class ChatResult:
     escalated: bool
     needs_operator: bool
     images: list[str] = field(default_factory=list)
+    source_snippets: list[SourceSnippet] = field(default_factory=list)
+    user_question: str = ""
 
 
 LOW_CONFIDENCE_MSG = _LOW_CONFIDENCE_MSG
@@ -84,12 +95,43 @@ def _format_context(hits: list[SearchHit]) -> str:
     return "\n\n---\n\n".join(parts)
 
 
+def _doc_download_url(source: str) -> str:
+    from urllib.parse import quote
+
+    return f"/api/documents/{quote(source)}"
+
+
+def _build_snippets(hits: list[SearchHit]) -> list[SourceSnippet]:
+    seen: set[str] = set()
+    snippets: list[SourceSnippet] = []
+    for h in hits:
+        if not h.source or h.kind != "text":
+            continue
+        key = f"{h.source}:{h.chunk_index}"
+        if key in seen:
+            continue
+        seen.add(key)
+        excerpt = h.text.strip()
+        if len(excerpt) > 320:
+            excerpt = excerpt[:317] + "…"
+        snippets.append(
+            SourceSnippet(
+                source=h.source,
+                excerpt=excerpt,
+                chunk_index=h.chunk_index,
+                score=h.score,
+                download_url=_doc_download_url(h.source),
+            )
+        )
+    return snippets[:3]
+
+
 def _ensure_source_line(answer: str, sources: list[str]) -> str:
     lower = answer.lower()
-    if "источник:" in lower or "📎" in answer:
+    if "источник:" in lower:
         return answer
     if sources:
-        return f"{answer}\n\n📎 Источник: {sources[0]}"
+        return f"{answer}\n\nИсточник: {sources[0]}"
     return answer
 
 
@@ -100,22 +142,25 @@ def ask(
 ) -> ChatResult:
     q = question.strip()
     if not q:
-        return ChatResult(EMPTY_QUESTION_MSG, 0.0, [], False, False)
+        return ChatResult(EMPTY_QUESTION_MSG, 0.0, [], False, False, user_question=q)
 
     if force_escalate or is_escalation_request(q):
         record_query(q, False, 0.0)
-        return ChatResult(ESCALATION_MSG, 0.0, [], True, True)
+        return ChatResult(ESCALATION_MSG, 0.0, [], True, True, user_question=q)
 
     if on_phase:
         on_phase("search")
     hits = search(q)
     confidence = best_confidence(hits)
     sources = list(dict.fromkeys(h.source for h in hits if h.source))
+    snippets = _build_snippets(hits)
     images = _pick_images(hits, q)
 
     if confidence < settings.confidence_threshold or not hits:
         record_query(q, False, confidence)
-        return ChatResult(LOW_CONFIDENCE_MSG, confidence, sources, False, True, images)
+        return ChatResult(
+            LOW_CONFIDENCE_MSG, confidence, sources, False, True, images, snippets, q
+        )
 
     context = _format_context(hits)
     try:
@@ -131,13 +176,15 @@ def ask(
             False,
             True,
             images,
+            snippets,
+            q,
         )
 
     answer = _ensure_source_line(answer, sources)
-    if images and "🖼" not in answer:
-        answer += "\n\n🖼 К иллюстрации из документации — см. вложение ниже."
+    if images and "иллюстрац" not in answer.lower():
+        answer += "\n\nК иллюстрации из документации — см. вложение ниже."
     record_query(q, True, confidence, sources[0] if sources else "")
-    return ChatResult(answer, confidence, sources, False, False, images)
+    return ChatResult(answer, confidence, sources, False, False, images, snippets, q)
 
 
 def ask_from_image(image_bytes: bytes, caption: str = "") -> ChatResult:
@@ -170,5 +217,7 @@ def ask_from_image(image_bytes: bytes, caption: str = "") -> ChatResult:
     combined = f"{user_q}\n\n[Распознано на изображении пользователя]\n{desc}"
     result = ask(combined)
     preview = desc if len(desc) <= 300 else desc[:297] + "…"
-    result.answer = f"🖼 Распознано на вашем изображении:\n{preview}\n\n---\n\n{result.answer}"
+    result.answer = f"Распознано на вашем изображении:\n{preview}\n\n---\n\n{result.answer}"
+    if not result.user_question:
+        result.user_question = user_q
     return result

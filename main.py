@@ -24,6 +24,7 @@ from redis import Redis
 from app.api.admin import router as admin_router
 from app.api.analytics import router as analytics_router
 from app.api.chat import router as chat_router
+from app.api.operator import router as operator_router
 from app.config import settings
 from app.rag.image_store import resolve_doc_image
 from app.rag.indexer import collection_info, index_all
@@ -99,6 +100,7 @@ app = FastAPI(title="DocHelper Барс", version="1.0.0", lifespan=lifespan)
 app.include_router(chat_router)
 app.include_router(admin_router)
 app.include_router(analytics_router)
+app.include_router(operator_router)
 
 if STATIC.exists():
     app.mount("/static", StaticFiles(directory=str(STATIC)), name="static")
@@ -112,6 +114,39 @@ async def doc_image(file_path: str):
 
         raise HTTPException(status_code=404, detail="Image not found")
     return FileResponse(resolved)
+
+
+@app.get("/api/documents/{filename}")
+async def download_document(filename: str):
+    from fastapi import HTTPException
+    from urllib.parse import unquote
+
+    name = unquote(filename)
+    if ".." in name or "/" in name or "\\" in name:
+        raise HTTPException(400, "Invalid filename")
+    for folder in (settings.docs_dir, settings.upload_dir):
+        path = folder / name
+        if path.is_file():
+            return FileResponse(path, filename=name)
+    raise HTTPException(404, "Document not found")
+
+
+@app.get("/operator")
+async def operator_page():
+    index = STATIC / "operator.html"
+    if index.exists():
+        return FileResponse(index)
+    return FileResponse(STATIC / "index.html")
+
+
+@app.get("/presentation")
+async def presentation_page():
+    deck = STATIC / "presentation.html"
+    if deck.exists():
+        return FileResponse(deck)
+    from fastapi import HTTPException
+
+    raise HTTPException(404, "Presentation not found")
 
 
 @app.get("/")

@@ -3,108 +3,59 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>DocHelper · БАРС Груп</title>
+  <title>DocHelper Барс — помощник по документации</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/static/style.css" />
 </head>
-<body>
+<body class="user-mode">
   <div class="bg-grid" aria-hidden="true"></div>
   <div class="bg-glow bg-glow--1" aria-hidden="true"></div>
   <div class="bg-glow bg-glow--2" aria-hidden="true"></div>
 
-  <header class="site-header">
+  <header class="site-header site-header--minimal">
     <div class="header-inner">
-      <a class="brand" href="https://bars.group/" target="_blank" rel="noopener">
-        <img src="/static/bars-logo.svg" alt="БАРС Груп" class="brand-logo" width="88" height="28" />
+      <div class="brand brand--static">
+        <img src="/static/bars-mascot.svg" alt="Барс" class="brand-mascot" width="40" height="40" />
         <span class="brand-divider"></span>
-        <span class="brand-product">DocHelper</span>
-      </a>
-      <nav class="nav-tabs">
-        <button class="tab active" data-tab="chat">
-          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          Чат
-        </button>
-        <button class="tab" data-tab="admin">
-          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          Документы
-        </button>
-        <button class="tab" data-tab="stats">
-          <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-          Аналитика
-        </button>
-      </nav>
+        <span class="brand-product">DocHelper Барс</span>
+      </div>
     </div>
   </header>
 
-  <main class="site-main">
-    <section id="chat" class="panel active">
-      <div class="hero">
-        <p class="hero-tag">Цифровые решения · RAG-поддержка</p>
-        <h1 class="hero-title">Виртуальный помощник<br /><span class="hero-accent">по документации</span></h1>
-        <p class="hero-desc">Ответы на основе корпоративной базы знаний с указанием источника и уровнем уверенности.</p>
-        <div class="tech-badges">
-          <span class="badge">RAG</span>
-          <span class="badge">Qdrant</span>
-          <span class="badge">GigaChat</span>
-          <span class="badge">Whisper</span>
-          <span class="badge">Vision</span>
+  <main class="site-main site-main--chat">
+    <div class="hero hero--compact">
+      <img src="/static/bars-mascot.svg" alt="" class="hero-mascot" width="72" height="72" aria-hidden="true" />
+      <div>
+        <h1 class="hero-title hero-title--sm">Привет! Я помогу с документацией</h1>
+        <p class="hero-desc">Задайте вопрос — отвечу по базе знаний и покажу, из какого документа взят ответ.</p>
+      </div>
+    </div>
+
+    <div class="chat-card glass">
+      <div id="messages" class="messages"></div>
+      <p class="faq-label">Частые темы</p>
+      <div id="faq-chips" class="faq-chips" aria-label="Частые темы"></div>
+      <form id="chat-form" class="chat-form">
+        <div class="input-wrap">
+          <input id="chat-input" placeholder="Задайте вопрос по документации…" autocomplete="off" />
         </div>
-      </div>
-
-      <div class="chat-card glass">
-        <div id="messages" class="messages"></div>
-        <p class="faq-label">🔖 Частые темы</p>
-        <div id="faq-chips" class="faq-chips" aria-label="Частые темы"></div>
-        <form id="chat-form" class="chat-form">
-          <div class="input-wrap">
-            <input id="chat-input" placeholder="Задайте вопрос по документации…" autocomplete="off" />
-          </div>
-          <label class="btn btn-outline image-upload-btn" title="Прикрепить скриншот">
-            🖼
-            <input type="file" id="chat-image" accept="image/*" hidden />
-          </label>
-          <button type="submit" class="btn btn-primary">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-            Отправить
-          </button>
-          <button type="button" id="escalate-btn" class="btn btn-outline">Оператор</button>
-        </form>
-      </div>
-    </section>
-
-    <section id="admin" class="panel">
-      <div class="section-head">
-        <h2>Управление документами</h2>
-        <p class="hint">Загрузите .docx / .pdf / .md — файл будет проиндексирован в векторную базу Qdrant.</p>
-      </div>
-      <div class="glass card-block">
-        <form id="upload-form" class="upload-form">
-          <label class="file-label">
-            <input type="file" id="file-input" accept=".docx,.pdf,.md,.txt" />
-            <span class="file-btn">Выбрать файл</span>
-            <span class="file-name" id="file-name">Файл не выбран</span>
-          </label>
-          <button type="submit" class="btn btn-primary">Загрузить и проиндексировать</button>
-        </form>
-        <button id="reindex-btn" class="btn btn-secondary">Переиндексировать всё</button>
-        <ul id="doc-list" class="doc-list"></ul>
-      </div>
-    </section>
-
-    <section id="stats" class="panel">
-      <div class="section-head">
-        <h2>Аналитика запросов</h2>
-        <p class="hint">Статистика автоответов, эскалаций и популярных тем.</p>
-      </div>
-      <div id="stats-box" class="stats-box glass">Загрузка…</div>
-    </section>
+        <label class="btn btn-outline image-upload-btn" title="Прикрепить скриншот">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+          <input type="file" id="chat-image" accept="image/*" hidden />
+        </label>
+        <button type="submit" class="btn btn-primary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          Отправить
+        </button>
+        <button type="button" id="escalate-btn" class="btn btn-outline">Оператор</button>
+      </form>
+    </div>
   </main>
 
-  <footer class="site-footer">
-    <span>АО «БАРС Груп» · DocHelper · хакathon «Королева Кода»</span>
-    <a href="https://bars.group/" target="_blank" rel="noopener">bars.group</a>
+  <footer class="site-footer site-footer--minimal">
+    <span>DocHelper Барс · хакathon «Королева Кода»</span>
   </footer>
 
   <script src="/static/app.js"></script>

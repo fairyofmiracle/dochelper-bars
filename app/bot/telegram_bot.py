@@ -13,16 +13,17 @@ from app.config import settings
 from app.rag.image_store import resolve_doc_image
 from app.services.chat_async import ask_async, ask_from_image_async
 from app.services.escalation import notify_support
+from app.services.escalation_queue import enqueue
 from app.services.session import append_message
 from app.services.speech import transcribe_bytes, whisper_ready
 
 logger = logging.getLogger(__name__)
 
-STATUS_LLM = "✍️ Формирую ответ..."
+STATUS_LLM = "Формирую ответ..."
 
-BTN_ASK = "❓ Задать вопрос"
-BTN_CANCEL = "❌ Отмена"
-BTN_OPERATOR = "🧑‍💼 Переключить на оператора"
+BTN_ASK = "Задать вопрос"
+BTN_CANCEL = "Отмена"
+BTN_OPERATOR = "Переключить на оператора"
 
 MAIN_KEYBOARD = ReplyKeyboardMarkup(
     [
@@ -91,7 +92,7 @@ async def _send_doc_images(update: Update, image_urls: list[str]) -> None:
             continue
         try:
             with path.open("rb") as fh:
-                await message.reply_photo(photo=fh, caption="📎 Иллюстрация из документации")
+                await message.reply_photo(photo=fh, caption="Иллюстрация из документации")
         except Exception:
             logger.debug("reply_photo failed for %s", path, exc_info=True)
 
@@ -162,6 +163,7 @@ async def _process_question(update: Update, context: ContextTypes.DEFAULT_TYPE, 
             user = update.effective_user
             label = user.full_name if user else "unknown"
             await notify_support(sid, label, question)
+            enqueue(sid, label, question)
 
         await _send_result(
             update,
@@ -184,7 +186,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         reply_markup=MAIN_KEYBOARD,
     )
     await update.message.reply_text(
-        "🔖 Частые темы — нажмите, чтобы сразу задать вопрос:",
+        "Частые темы — нажмите, чтобы сразу задать вопрос:",
         reply_markup=faq_inline_keyboard(),
     )
 
@@ -286,6 +288,7 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         if result.escalated:
             user = update.effective_user
             await notify_support(sid, user.full_name if user else "unknown", caption or "[фото]")
+            enqueue(sid, user.full_name if user else "unknown", caption or "[фото]")
 
         await _send_result(
             update,
@@ -321,7 +324,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         )
         return
 
-    if text in (BTN_OPERATOR, "🧑‍💼 Оператор", "Оператор"):
+    if text in (BTN_OPERATOR, "Оператор", "оператор"):
         await operator_cmd(update, context)
         return
 
@@ -348,6 +351,7 @@ async def operator_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         result = await ask_async("оператор", force_escalate=True)
         user = update.effective_user
         await notify_support(sid, user.full_name if user else "unknown")
+        enqueue(sid, user.full_name if user else "unknown", BTN_OPERATOR)
         await _send_result(update, result.answer, True)
 
 
@@ -363,7 +367,7 @@ async def callback_faq(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     except (ValueError, IndexError):
         return
     if query.message:
-        await query.message.reply_text(f"❓ {question}")
+        await query.message.reply_text(question)
     await _process_question(update, context, question)
 
 
@@ -377,6 +381,7 @@ async def callback_escalate(update: Update, context: ContextTypes.DEFAULT_TYPE) 
         result = await ask_async("оператор", force_escalate=True)
         user = update.effective_user
         await notify_support(sid, user.full_name if user else "unknown")
+        enqueue(sid, user.full_name if user else "unknown", BTN_OPERATOR)
         if query.message:
             await query.message.reply_text(result.answer, reply_markup=MAIN_KEYBOARD)
         else:

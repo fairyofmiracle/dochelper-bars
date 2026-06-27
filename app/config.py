@@ -47,6 +47,8 @@ class Settings(BaseSettings):
     whisper_enabled: bool = True
     whisper_model: str = "base"
 
+    operator_pin: str = ""
+
     escalation_keywords: str = "оператор,человек,живой,менеджер"
 
 
