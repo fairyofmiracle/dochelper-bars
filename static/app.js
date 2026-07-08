@@ -123,11 +123,10 @@ function removeLoadingEl(el) {
 
 function applyChatResponse(data, loadingEl, userText) {
   removeLoadingEl(loadingEl);
-  const meta = data.sources?.length ? data.sources.join(" · ") : "";
   addMsg(
     data.answer,
     "bot",
-    meta,
+    "",
     data.needs_operator && !data.escalated,
     false,
     data.images || [],

@@ -126,8 +126,8 @@ def _build_snippets(hits: list[SearchHit]) -> list[SourceSnippet]:
     return snippets[:2]
 
 
-def _polish_answer(answer: str) -> str:
-    """Убираем служебные строки — источник показывает UI."""
+def _polish_answer(answer: str, *, telegram: bool = False) -> str:
+    """Убираем служебные строки. В вебе — также строку «Источник:» (показывает UI)."""
     lines: list[str] = []
     for line in answer.splitlines():
         low = line.strip().lower()
@@ -137,14 +137,15 @@ def _polish_answer(answer: str) -> str:
             continue
         if low in {"содержание", "content"}:
             continue
-        cleaned = re.sub(r"^[📋📝💡📎]\s*", "", line.strip())
+        cleaned = line.strip()
         cleaned = re.sub(r"\*\*(.+?)\*\*", r"\1", cleaned)
-        cleaned = re.sub(
-            r"^(краткий ответ|коротко|подробности|важно|вот как это устроено)\s*[—\-:]\s*",
-            "",
-            cleaned,
-            flags=re.IGNORECASE,
-        )
+        if not telegram:
+            cleaned = re.sub(
+                r"^(краткий ответ|коротко|подробности|важно|вот как это устроено)\s*[—\-:]\s*",
+                "",
+                cleaned,
+                flags=re.IGNORECASE,
+            )
         if cleaned:
             lines.append(cleaned)
     text = "\n".join(lines).strip()
@@ -155,6 +156,7 @@ def ask(
     question: str,
     force_escalate: bool = False,
     on_phase: Callable[[str], None] | None = None,
+    channel: str = "web",
 ) -> ChatResult:
     q = question.strip()
     if not q:
@@ -182,7 +184,7 @@ def ask(
     try:
         if on_phase:
             on_phase("llm")
-        answer = _polish_answer(generate_answer(q, context))
+        answer = _polish_answer(generate_answer(q, context, channel=channel), telegram=channel == "telegram")
     except Exception as exc:
         record_query(q, False, confidence)
         return ChatResult(
@@ -196,12 +198,17 @@ def ask(
             q,
         )
     if images:
-        answer += "\n\nЕсли нужно — ниже приложила схему из документации."
+        suffix = (
+            "\n\n🖼 Ниже приложила схему из документации."
+            if channel == "telegram"
+            else "\n\nЕсли нужно — ниже приложила схему из документации."
+        )
+        answer += suffix
     record_query(q, True, confidence, sources[0] if sources else "")
     return ChatResult(answer, confidence, sources, False, False, images, snippets, q)
 
 
-def ask_from_image(image_bytes: bytes, caption: str = "") -> ChatResult:
+def ask_from_image(image_bytes: bytes, caption: str = "", channel: str = "web") -> ChatResult:
     """Скриншот пользователя → vision → RAG."""
     if not image_bytes:
         return ChatResult(EMPTY_QUESTION_MSG, 0.0, [], False, False)
@@ -209,7 +216,7 @@ def ask_from_image(image_bytes: bytes, caption: str = "") -> ChatResult:
     if not vision_ready():
         return ChatResult(
             "Распознавание изображений недоступно.\n"
-            "Задайте OLLAMA_VISION_MODEL (например qwen2-vl:7b) и перезапустите сервер,\n"
+            "Задайте OLLAMA_VISION_MODEL (например qwen2.5vl:3b) и перезапустите сервер,\n"
             "или опишите проблему текстом.",
             0.0,
             [],
@@ -234,9 +241,9 @@ def ask_from_image(image_bytes: bytes, caption: str = "") -> ChatResult:
         f"[Тип изображения: {analysis.type_label}]\n"
         f"[Распознано на изображении пользователя]\n{analysis.description}"
     )
-    result = ask(combined)
+    result = ask(combined, channel=channel)
     if analysis.search_query and analysis.search_query != user_q:
-        alt = ask(search_q)
+        alt = ask(search_q, channel=channel)
         if alt.confidence > result.confidence:
             result = alt
 

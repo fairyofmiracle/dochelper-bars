@@ -210,10 +210,11 @@
     .value-box--before h3 { color: #fca5a5; }
     .value-box--after { background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.35); }
     .value-box--after h3 { color: var(--green); }
-    .demo-split { display: grid; grid-template-columns: 1fr 1.1fr; gap: 1.25rem; align-items: start; margin-top: 0.5rem; }
+    .slide--demo { align-items: center; text-align: center; }
     .demo-video-wrap {
       border-radius: 16px; overflow: hidden; border: 1px solid var(--border);
-      background: rgba(0,0,0,0.35); aspect-ratio: 16/10; max-height: 280px;
+      background: rgba(0,0,0,0.35); aspect-ratio: 16/9;
+      width: min(920px, 92vw); max-height: 62vh; margin: 0.75rem auto 0;
     }
     .demo-video-wrap video { width: 100%; height: 100%; object-fit: cover; display: block; }
     .demo-video-placeholder {
@@ -395,13 +396,8 @@
             <span class="stat-pill stat-pill--blue">6 AI-агентов</span>
             <span class="stat-pill stat-pill--purple">Telegram + Web</span>
           </div>
-          <p style="font-size:0.88rem;margin-bottom:0.5rem"><strong style="color:var(--text)">Команда one_commit</strong></p>
-          <div style="display:flex;flex-wrap:wrap;gap:0.4rem">
-            <span class="stat-pill stat-pill--blue">Backend · RAG</span>
-            <span class="stat-pill stat-pill--green">Web · оператор</span>
-            <span class="stat-pill stat-pill--purple">Telegram</span>
-            <span class="stat-pill stat-pill--amber">Demo · защита</span>
-          </div>
+          <p style="font-size:0.88rem;margin-bottom:0.5rem"><strong style="color:var(--text)">one_commit · solo</strong></p>
+          <p style="font-size:0.82rem;color:var(--muted);margin:0 0 0.6rem">Backend · RAG · Web · Telegram · Operator · Demo</p>
         </div>
         <div>
           <p style="text-align:center;margin-bottom:0.75rem;color:var(--text)"><strong>Попробуйте live</strong></p>
@@ -493,29 +489,18 @@
       <p style="margin-top:0.75rem;font-size:0.88rem;color:var(--muted)">Analytics — отдельный агент для поддержки и техписов, не для конечного пользователя</p>
     </section>
 
-    <!-- 7. Demo -->
-    <section class="slide" data-title="Demo">
-      <h2>Что покажем live</h2>
-      <p style="margin-bottom:0.65rem;color:var(--text)">Живой продукт или <strong>запись demo</strong> · QR на первом слайде</p>
-      <div class="demo-split">
-        <ol class="solution-steps" style="margin:0">
-          <li><strong style="color:var(--text)">Telegram / Web</strong> — «Как работает фильтр документа?» → ответ + источник</li>
-          <li><strong style="color:var(--text)">Web</strong> — схема из docx при визуальном вопросе</li>
-          <li><strong style="color:var(--text)">Эскалация</strong> — офис-менеджер → тикет + панель оператора</li>
-          <li><strong style="color:var(--text)">Аналитика</strong> — 94% авто, weak spots</li>
-        </ol>
-        <div class="demo-video-wrap">
-          <video id="demo-video" controls playsinline preload="metadata">
-            <source id="demo-video-mp4" type="video/mp4" />
-            <source id="demo-video-webm" type="video/webm" />
-          </video>
-          <div id="demo-video-placeholder" class="demo-video-placeholder">
-            Запись demo<br />
-            <span style="font-size:0.85rem;color:var(--muted)">если live недоступен</span>
-          </div>
+    <!-- 7. Demo — видео -->
+    <section class="slide slide--demo" data-title="Demo">
+      <h2>Live demo</h2>
+      <div class="demo-video-wrap">
+        <video id="demo-video" controls playsinline preload="metadata">
+          <source id="demo-video-mp4" type="video/mp4" />
+          <source id="demo-video-webm" type="video/webm" />
+        </video>
+        <div id="demo-video-placeholder" class="demo-video-placeholder">
+          Видео demo
         </div>
       </div>
-      <p style="margin-top:0.65rem;font-size:0.85rem;color:var(--muted)">На защите: live с QR или Play на видео · голос/скрин — по времени</p>
     </section>
 
     <!-- 8. Метрики -->

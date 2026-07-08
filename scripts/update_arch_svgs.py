@@ -1,9 +1,9 @@
-"""Write architecture SVGs with UTF-8 Russian labels."""
+"""Write presentation SVGs with UTF-8 Russian labels."""
 from pathlib import Path
 
 OUT = Path(__file__).resolve().parents[1] / "static" / "presentation"
 
-MAIN = """<?xml version="1.0" encoding="UTF-8"?>
+ARCH = """<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 230" fill="none">
   <rect x="10" y="10" width="700" height="210" rx="18" fill="rgba(16,185,129,0.06)" stroke="rgba(16,185,129,0.5)" stroke-width="2" stroke-dasharray="8 4"/>
   <text x="360" y="38" text-anchor="middle" font-family="Manrope,system-ui,sans-serif" font-size="14" font-weight="700" fill="#10b981">Закрытый контур — данные не уходят наружу</text>
@@ -48,7 +48,7 @@ MAIN = """<?xml version="1.0" encoding="UTF-8"?>
 </svg>
 """
 
-STACK = """<?xml version="1.0" encoding="UTF-8"?>
+METRICS = """<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 220" fill="none">
   <rect x="8" y="8" width="284" height="204" rx="16" fill="#0f172a" stroke="rgba(16,185,129,0.35)" stroke-width="1.5"/>
   <text x="150" y="32" text-anchor="middle" font-family="Manrope,system-ui,sans-serif" font-size="11" font-weight="700" fill="#94a3b8">Тесты брифа · 17 кейсов</text>
@@ -79,7 +79,40 @@ STACK = """<?xml version="1.0" encoding="UTF-8"?>
 </svg>
 """
 
-(OUT / "ill-arch.svg").write_text(MAIN, encoding="utf-8")
-(OUT / "ill-arch-stack.svg").write_text(STACK, encoding="utf-8")
+SOLUTION = """<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 240" fill="none">
+  <rect x="16" y="24" width="288" height="192" rx="18" fill="#0f172a" stroke="rgba(0,132,255,0.45)" stroke-width="2"/>
+  <rect x="16" y="24" width="288" height="36" rx="18" fill="rgba(0,132,255,0.12)"/>
+  <rect x="16" y="42" width="288" height="18" fill="rgba(0,132,255,0.12)"/>
+  <circle cx="40" cy="42" r="6" fill="#ef4444" opacity="0.7"/>
+  <circle cx="58" cy="42" r="6" fill="#f59e0b" opacity="0.7"/>
+  <circle cx="76" cy="42" r="6" fill="#10b981" opacity="0.7"/>
+  <text x="160" y="47" text-anchor="middle" font-family="Manrope,system-ui,sans-serif" font-size="11" font-weight="700" fill="#e2e8f0">DocHelper</text>
+  <circle cx="52" cy="88" r="22" fill="url(#botGrad)"/>
+  <text x="52" y="93" text-anchor="middle" font-family="Manrope,system-ui,sans-serif" font-size="11" font-weight="800" fill="#fff">AI</text>
+  <rect x="82" y="68" width="196" height="44" rx="12" fill="#1e293b" stroke="#334155"/>
+  <text x="96" y="88" font-family="Manrope,system-ui,sans-serif" font-size="10" fill="#cbd5e1">Как работает фильтр</text>
+  <text x="96" y="102" font-family="Manrope,system-ui,sans-serif" font-size="10" fill="#cbd5e1">документа?</text>
+  <circle cx="52" cy="148" r="22" fill="url(#botGrad)" opacity="0.9"/>
+  <text x="52" y="153" text-anchor="middle" font-family="Manrope,system-ui,sans-serif" font-size="11" font-weight="800" fill="#fff">AI</text>
+  <rect x="82" y="124" width="210" height="72" rx="12" fill="rgba(16,185,129,0.1)" stroke="rgba(16,185,129,0.45)" stroke-width="1.5"/>
+  <text x="96" y="144" font-family="Manrope,system-ui,sans-serif" font-size="9.5" font-weight="600" fill="#10b981">Ответ из docx</text>
+  <text x="96" y="160" font-family="Manrope,system-ui,sans-serif" font-size="8.5" fill="#94a3b8">Functionalnie.docx — фрагмент</text>
+  <rect x="96" y="168" width="72" height="18" rx="6" fill="rgba(0,132,255,0.2)" stroke="rgba(0,132,255,0.5)"/>
+  <text x="132" y="180" text-anchor="middle" font-family="Manrope,system-ui,sans-serif" font-size="8" font-weight="600" fill="#00c2ff">Скачать</text>
+  <rect x="32" y="204" width="256" height="28" rx="14" fill="#1e293b" stroke="#334155"/>
+  <text x="48" y="222" font-family="Manrope,system-ui,sans-serif" font-size="9" fill="#64748b">Задайте вопрос...</text>
+  <circle cx="272" cy="218" r="10" fill="url(#botGrad)"/>
+  <path d="M266 218h6l-3 3v-3z" fill="#fff"/>
+  <defs>
+    <linearGradient id="botGrad" x1="30" y1="66" x2="74" y2="110" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0084FF"/><stop offset="1" stop-color="#00C2FF"/>
+    </linearGradient>
+  </defs>
+</svg>
+"""
+
+(OUT / "ill-arch.svg").write_text(ARCH, encoding="utf-8")
 (OUT / "ill-metrics.svg").write_text(METRICS, encoding="utf-8")
-print("ok:", OUT / "ill-arch.svg", OUT / "ill-metrics.svg")
+(OUT / "ill-solution.svg").write_text(SOLUTION, encoding="utf-8")
+print("ok")

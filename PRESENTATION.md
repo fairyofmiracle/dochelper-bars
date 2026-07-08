@@ -1,22 +1,17 @@
 # DocHelper — презентация для защиты
 
-**Команда:** one_commit · **Хакатон:** «Королева Кода» · **Кейс:** АО «Барс Груп»
+**Команда:** one_commit (solo) · **Хакатон:** «Королева Кода» · **Кейс:** АО «Барс Груп»
 
-**HTML:** `static/presentation.html` · **Речь:** [SPEECH.md](SPEECH.md) · **Шпаргалка Q&A:** [DEFENSE.md](DEFENSE.md)
+**HTML:** `static/presentation.html` · **Речь:** [SPEECH_SHORT.md](SPEECH_SHORT.md) · **Q&A:** [DEFENSE.md](DEFENSE.md)
 
 ---
 
 ## Слайд 1 — Титул · команда · QR
 
 **DocHelper** — AI-агент первой линии поддержки  
-Кейс АО «Барс Груп» · команда **one_commit** · хакатон «Королева Кода»
+Кейс АО «Барс Груп» · **one_commit** (solo) · хакатон «Королева Кода»
 
-| Роль | Зона |
-|------|------|
-| **Backend / RAG** | FastAPI, Qdrant, LLM, pipeline агентов |
-| **Web + оператор** | Чат, панель, аналитика, интеграции |
-| **Telegram + demo** | Бот, сценарии защиты, тесты брифа |
-| **Продукт / кейс** | Документация Барс, презentaция, метрики |
+Проект целиком — **один участник**: backend/RAG, Telegram, Web, operator, analytics, vision для docx, тесты брифа, презентация.
 
 **94% авто** · **RAG + 6 агентов** · **Telegram + Web**
 

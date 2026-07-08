@@ -4,16 +4,18 @@
 
 ---
 
-## Кто что делает (команда one_commit)
+## Кто что делает (one_commit — solo)
 
-| Кто | Что делал |
-|-----|-----------|
-| **Backend / RAG** | FastAPI, поиск в Qdrant, LLM, confidence, индексация docx, vision для скринов |
-| **Web + оператор** | Чат пользователя, панель `/operator`, аналитика, загрузка docs, интеграции |
-| **Telegram** | Бот, голос Whisper, эскалация, rate limit |
-| **Кейс / demo** | 17 тестов брифа, TEST_REPORT, презентация, сценарий live |
+Один участник закрыл end-to-end:
 
-*На слайде роли — не имена. Имена скажите устно, если спросят.*
+| Зона | Что сделано |
+|------|-------------|
+| **Backend / RAG** | FastAPI, Qdrant, LLM, confidence, ingest docx, vision для картинок |
+| **Web + оператор** | Чат, `/operator`, analytics, загрузка docs |
+| **Telegram** | Бот, Whisper, эскалация, rate limit |
+| **Demo / защита** | 17 тестов брифа, TEST_REPORT, presentation, SPEECH |
+
+*На слайде — one_commit solo, без разбивки по людям.*
 
 ---
 

@@ -13,6 +13,7 @@ async def ask_async(
     question: str,
     force_escalate: bool = False,
     on_phase: PhaseCallback | None = None,
+    channel: str = "web",
 ) -> ChatResult:
     loop = asyncio.get_running_loop()
 
@@ -23,8 +24,8 @@ async def ask_async(
         if asyncio.iscoroutine(result):
             asyncio.run_coroutine_threadsafe(result, loop)
 
-    return await asyncio.to_thread(ask, question, force_escalate, sync_on_phase)
+    return await asyncio.to_thread(ask, question, force_escalate, sync_on_phase, channel)
 
 
-async def ask_from_image_async(image_bytes: bytes, caption: str = "") -> ChatResult:
-    return await asyncio.to_thread(ask_from_image, image_bytes, caption)
+async def ask_from_image_async(image_bytes: bytes, caption: str = "", channel: str = "web") -> ChatResult:
+    return await asyncio.to_thread(ask_from_image, image_bytes, caption, channel)

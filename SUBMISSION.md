@@ -1,9 +1,8 @@
 # DocHelper Барс — материалы для сдачи проекта
 
-**Команда:** one_commit  
+**Команда:** one_commit (solo — один участник)  
 **Хакатон:** «Королева Кода»  
-**Кейс:** АО «Барс Груп»  
-**Репозиторий:** https://tatarsan.space/one_commit/bars_support_bot
+**Кейс:** АО «Барс Груп»
 
 ---
 
@@ -17,6 +16,8 @@
 
 - **Пользователи** БАРС-Офис и корпоративных сервисов.
 - **Внутренние сотрудники** — новички, менеджеры, офис-менеджеры.
+
+
 
 ### Решение
 
@@ -35,27 +36,37 @@
 
 ---
 
+
+
 ## 2. Презентация для защиты
 
 - Текст слайдов: **[PRESENTATION.md](PRESENTATION.md)**
-- HTML: **http://127.0.0.1:8026/presentation** (или `static/presentation.html` локально)
+- HTML: **[http://127.0.0.1:8026/presentation](http://127.0.0.1:8026/presentation)** (или `static/presentation.html` локально)
 - Речь ~7 мин: **[SPEECH.md](SPEECH.md)**
 - Шпаргалка Q&A: **[DEFENSE.md](DEFENSE.md)**
 
 ---
 
+
+
 ## 3. Демонстрация прототипа
+
+
 
 ### Live demo (рекомендуется)
 
-| # | Действие | Что показать |
-|---|----------|--------------|
-| 1 | Web → «Начать диалог» | Вступление, чипы частых тем |
-| 2 | *«Как работает фильтр документа?»* | Ответ + **источник** + **схема из docx** |
-| 3 | *«Какие ценности у компании Барс Груп?»* | Список ценностей из `newbiePage.docx` |
-| 4 | Telegram `/start` | Текст / голос; оператор при низкой уверенности |
-| 5 | Web `/operator` | Очередь эскалаций, ответ оператора пользователю |
-| 6 | Аналитика в панели оператора | % авто, слабые места доков, тренды |
+
+| #   | Действие                                 | Что показать                                    |
+| --- | ---------------------------------------- | ----------------------------------------------- |
+| 1   | Web → «Начать диалог»                    | Вступление, чипы частых тем                     |
+| 2   | *«Как работает фильтр документа?»*       | Ответ + **источник** + **схема из docx**        |
+| 3   | *«Какие ценности у компании Барс Груп?»* | Список ценностей из `newbiePage.docx`           |
+| 4   | Telegram `/start`                        | Текст / голос; оператор при низкой уверенности  |
+| 5   | Web `/operator`                          | Очередь эскалаций, ответ оператора пользователю |
+| 6   | Аналитика в панели оператора             | % авто, слабые места доков, тренды              |
+
+
+
 
 ### Запуск перед демо
 
@@ -67,16 +78,20 @@
 python scripts\test_brief_cases.py
 ```
 
+
+
 ### Запасной вариант
 
 Видеозапись экрана 2–3 мин: Web (фильтр + источник) + Telegram (текст/голос).
 
 ---
 
+
+
 ## 4. Исходный код
 
 ```
-https://tatarsan.space/one_commit/bars_support_bot
+https://github.com/YOUR_USERNAME/bars-support-bot
 ```
 
 Установка: **[README.md](README.md)**
@@ -85,36 +100,46 @@ https://tatarsan.space/one_commit/bars_support_bot
 
 ---
 
+
+
 ## 5. Технологии, библиотеки, API, модели
 
-| Слой | Стек |
-|------|------|
-| Backend | Python 3.10+, FastAPI, Uvicorn |
-| Telegram | python-telegram-bot |
-| Web | HTML, CSS, JavaScript |
-| RAG | Qdrant, sentence-transformers (`intfloat/multilingual-e5-base`) |
-| Документы | python-docx, PyMuPDF |
-| LLM (демо) | GigaChat API (Сбер) |
-| LLM (закрытый контур) | Ollama, `qwen2.5:3b-instruct` / `7b-instruct` |
-| Speech | faster-whisper (`base`) |
-| Кэш / сессии | Redis |
-| Инфра | Docker Compose (Qdrant, Redis, Ollama) |
+
+| Слой                  | Стек                                                            |
+| --------------------- | --------------------------------------------------------------- |
+| Backend               | Python 3.10+, FastAPI, Uvicorn                                  |
+| Telegram              | python-telegram-bot                                             |
+| Web                   | HTML, CSS, JavaScript                                           |
+| RAG                   | Qdrant, sentence-transformers (`intfloat/multilingual-e5-base`) |
+| Документы             | python-docx, PyMuPDF                                            |
+| LLM (демо)            | GigaChat API (Сбер)                                             |
+| LLM (закрытый контур) | Ollama, `qwen2.5:3b-instruct` / `7b-instruct`                   |
+| Speech                | faster-whisper (`base`)                                         |
+| Кэш / сессии          | Redis                                                           |
+| Инфра                 | Docker Compose (Qdrant, Redis, Ollama)                          |
+
 
 **Внешние API (при онлайн-демо):** Telegram Bot API, GigaChat.  
 **Локально без интернета:** embeddings, Qdrant, Redis, Ollama, Whisper.
 
 ---
 
+
+
 ## 6. Раскрытие использования AI
 
-| Инструмент | Задача |
-|------------|--------|
-| **GigaChat** | Генерация ответа по найденным фрагментам (RAG) |
-| **Ollama** | Локальная LLM для закрытого контура |
-| **multilingual-e5-base** | Embeddings для семантического поиска |
-| **faster-whisper** | Распознавание голосовых (RU) |
-| **Qdrant** | Векторный поиск |
-| **Cursor / AI-ассистент** | Ускорение разработки (код, документация) |
+
+| Инструмент                | Задача                                         |
+| ------------------------- | ---------------------------------------------- |
+| **GigaChat**              | Генерация ответа по найденным фрагментам (RAG) |
+| **Ollama**                | Локальная LLM для закрытого контура            |
+| **multilingual-e5-base**  | Embeddings для семантического поиска           |
+| **faster-whisper**        | Распознавание голосовых (RU)                   |
+| **Qdrant**                | Векторный поиск                                |
+| **Cursor / AI-ассистент** | Ускорение разработки (код, документация)       |
+
+
+
 
 ### AI-конвейер
 
@@ -126,6 +151,8 @@ https://tatarsan.space/one_commit/bars_support_bot
             → [Escalation + Analytics]
 ```
 
+
+
 ### Как проверяли корректность
 
 1. System prompt: ответ **только** из контекста документации.
@@ -134,6 +161,8 @@ https://tatarsan.space/one_commit/bars_support_bot
 4. **17 тест-кейсов** из брифа — **16/17 (94%)**, прогон 27.06.2026, отчёт `TEST_REPORT.md`.
 5. Ручная проверка сценариев demo перед защитой.
 6. Sanity-check индекса (ненулевые embeddings после ingest).
+
+
 
 ### Честные ограничения
 
@@ -144,30 +173,40 @@ https://tatarsan.space/one_commit/bars_support_bot
 
 ---
 
+
+
 ## Соответствие брифу (детально)
+
+
 
 ### MVP — выполнено
 
-| Пункт брифа | Реализация |
-|-------------|------------|
-| Текст в Telegram | ✅ |
-| Семантический поиск docx/pdf/md | ✅ |
-| Схемы/картинки из базы знаний | ✅ Web, визуальные вопросы |
-| RAG + LLM + источник | ✅ |
-| Уверенность + «Переключить на оператора» | ✅ |
-| Эскалация с историей | ✅ `/operator`, очередь |
-| Тикет Usedesk/Jira (demo) | ✅ Авто при эскалации, badge в панели |
-| Git/Confluence auto-reindex | ✅ Webhook + demo-кнопки |
-| Аналитика | ✅ Web-панель, тренды, weak spots |
-| Антиспам / rate limit | ✅ Redis, Web + Telegram |
-| Tone of Voice, приветствие, DocHelper | ✅ `app/branding.py` |
-| 4 документа кейса | ✅ `data/docs/` |
+
+| Пункт брифа                              | Реализация                           |
+| ---------------------------------------- | ------------------------------------ |
+| Текст в Telegram                         | ✅                                    |
+| Семантический поиск docx/pdf/md          | ✅                                    |
+| Схемы/картинки из базы знаний            | ✅ Web, визуальные вопросы            |
+| RAG + LLM + источник                     | ✅                                    |
+| Уверенность + «Переключить на оператора» | ✅                                    |
+| Эскалация с историей                     | ✅ `/operator`, очередь               |
+| Тикет Usedesk/Jira (demo)                | ✅ Авто при эскалации, badge в панели |
+| Git/Confluence auto-reindex              | ✅ Webhook + demo-кнопки              |
+| Аналитика                                | ✅ Web-панель, тренды, weak spots     |
+| Антиспам / rate limit                    | ✅ Redis, Web + Telegram              |
+| Tone of Voice, приветствие, DocHelper    | ✅ `app/branding.py`                  |
+| 4 документа кейса                        | ✅ `data/docs/`                       |
+
+
+
 
 ### Будущие возможности (roadmap)
 
 - Jira / Zendesk / Usedesk — **mock-тикет + оператор** (API Usedesk опционально)  
 - Авто-reindex — **Git/Confluence webhook** + demo-кнопка в панели  
-- Vision для скринов пользователя (каркас есть)  
+- Vision для скринов пользователя (каркас есть)
+
+
 
 ### Закрытый контур (техтребование)
 
@@ -175,34 +214,44 @@ https://tatarsan.space/one_commit/bars_support_bot
 
 ---
 
+
+
 ## Соответствие положению хакатона
 
-| Требование | Где |
-|------------|-----|
-| 1. Краткое описание (проблема, аудитория, решение) | SUBMISSION.md §1 |
-| 2. Презентация | PRESENTATION.md, `/presentation` |
-| 3. Работающий MVP / видео | Web + Telegram, README «Запуск» |
-| 4. Репозиторий / архив кода | GitLab ссылка выше |
-| 5. Список технологий | SUBMISSION.md §5 |
-| 6. Раскрытие AI-инструментов | SUBMISSION.md §6 |
+
+| Требование                                         | Где                                    |
+| -------------------------------------------------- | -------------------------------------- |
+| 1. Краткое описание (проблема, аудитория, решение) | SUBMISSION.md §1                       |
+| 2. Презентация                                     | PRESENTATION.md, `/presentation`       |
+| 3. Работающий MVP / видео                          | Web + Telegram, README «Запуск»        |
+| 4. Репозиторий / архив кода                        | GitHub — README «Публикация на GitHub» |
+| 5. Список технологий                               | SUBMISSION.md §5                       |
+| 6. Раскрытие AI-инструментов                       | SUBMISSION.md §6                       |
+
 
 ---
+
+
 
 ## Соответствие критериям оценки
 
-| Критерий (макс.) | Баллы | Аргументация |
-|------------------|-------|--------------|
-| **1. Соответствие задаче** (5) | — | Прямое попадание в кейс Барс: RAG по их docx, эскалация, 17 тест-кейсов |
-| **2. Оригинальность** (5) | — | Иллюстрации из docx в ответе; OCR разделов «только-картинка»; голос + оператор с историей |
-| **3.1 Работоспособность** (0/1) | 1 | Live demo Web + TG, health-check, ingest |
-| **3.2 Тех. сложность** (2) | — | RAG, multi-agent pipeline, Docker, dual LLM (cloud/local) |
-| **3.3 Объём функций** (2) | — | TG + Web + operator + analytics + voice + doc images |
-| **4. Аргументация решения** (5) | — | RAG vs fine-tune; confidence gate; closed contour via Ollama |
-| **5. Качество информации** (5) | — | README, SUBMISSION, презентация, источник в каждом ответе |
-| **6. UX/UI** (5) | — | Welcome modal, чипы FAQ, панель оператора, бренд Барс |
-| **7. AI-агенты** (5) | — | Retriever + Generator + Evaluator + Escalation + Speech agent |
+
+| Критерий (макс.)                | Баллы | Аргументация                                                                              |
+| ------------------------------- | ----- | ----------------------------------------------------------------------------------------- |
+| **1. Соответствие задаче** (5)  | —     | Прямое попадание в кейс Барс: RAG по их docx, эскалация, 17 тест-кейсов                   |
+| **2. Оригинальность** (5)       | —     | Иллюстрации из docx в ответе; OCR разделов «только-картинка»; голос + оператор с историей |
+| **3.1 Работоспособность** (0/1) | 1     | Live demo Web + TG, health-check, ingest                                                  |
+| **3.2 Тех. сложность** (2)      | —     | RAG, multi-agent pipeline, Docker, dual LLM (cloud/local)                                 |
+| **3.3 Объём функций** (2)       | —     | TG + Web + operator + analytics + voice + doc images                                      |
+| **4. Аргументация решения** (5) | —     | RAG vs fine-tune; confidence gate; closed contour via Ollama                              |
+| **5. Качество информации** (5)  | —     | README, SUBMISSION, презентация, источник в каждом ответе                                 |
+| **6. UX/UI** (5)                | —     | Welcome modal, чипы FAQ, панель оператора, бренд Барс                                     |
+| **7. AI-агенты** (5)            | —     | Retriever + Generator + Evaluator + Escalation + Speech agent                             |
+
 
 ---
+
+
 
 ## Чеклист перед сдачей
 

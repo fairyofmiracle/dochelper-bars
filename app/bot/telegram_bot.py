@@ -14,6 +14,7 @@ from app.rag.image_store import resolve_doc_image
 from app.rag.vision import vision_ready
 from app.services.analytics import record_rate_limit
 from app.services.chat_async import ask_async, ask_from_image_async
+from app.services.documents import resolve_document_path
 from app.services.escalation_flow import escalate_session
 from app.services.rate_limit import check_rate_limit, rate_limit_message
 from app.services.session import append_message
@@ -74,6 +75,27 @@ def _trim_text(text: str) -> str:
     return text
 
 
+async def _send_source_documents(update: Update, sources: list[str]) -> None:
+    message = update.effective_message
+    if not message or not sources:
+        return
+    seen: set[str] = set()
+    for name in sources:
+        if not name or name in seen:
+            continue
+        seen.add(name)
+        path = resolve_document_path(name)
+        if not path:
+            continue
+        try:
+            with path.open("rb") as fh:
+                await message.reply_document(document=fh, filename=name, caption=name)
+        except Exception:
+            logger.debug("reply_document failed for %s", path, exc_info=True)
+        if len(seen) >= 1:
+            break
+
+
 async def _send_doc_images(update: Update, image_urls: list[str]) -> None:
     message = update.effective_message
     if not message or not image_urls:
@@ -97,6 +119,7 @@ async def _send_result(
     *,
     edit_message=None,
     images: list[str] | None = None,
+    sources: list[str] | None = None,
 ) -> None:
     text = _trim_text(text)
     inline = operator_inline_keyboard() if needs_operator else None
@@ -105,6 +128,7 @@ async def _send_result(
         try:
             await edit_message.edit_text(text, reply_markup=inline)
             await _send_doc_images(update, images or [])
+            await _send_source_documents(update, sources or [])
             return
         except Exception:
             logger.debug("edit_text failed, sending new message", exc_info=True)
@@ -114,6 +138,7 @@ async def _send_result(
         return
     await message.reply_text(text, reply_markup=inline)
     await _send_doc_images(update, images or [])
+    await _send_source_documents(update, sources or [])
 
 
 async def _process_question(update: Update, context: ContextTypes.DEFAULT_TYPE, question: str) -> None:
@@ -141,7 +166,7 @@ async def _process_question(update: Update, context: ContextTypes.DEFAULT_TYPE, 
 
         append_message(sid, "user", question)
         try:
-            result = await ask_async(question)
+            result = await ask_async(question, channel="telegram")
         except Exception as exc:
             logger.exception("ask_async failed")
             append_message(sid, "assistant", f"Ошибка: {exc}")
@@ -172,6 +197,7 @@ async def _process_question(update: Update, context: ContextTypes.DEFAULT_TYPE, 
             result.needs_operator and not result.escalated,
             edit_message=status_msg,
             images=result.images,
+            sources=result.sources,
         )
 
 
@@ -182,7 +208,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         reply_markup=MAIN_KEYBOARD,
     )
     await update.message.reply_text(
-        "Напишите вопрос текстом, *голосовым* или *скриншотом*.\n"
+        "Напишите вопрос текстом или *голосовым*.\n"
         "Кнопка «Задать вопрос» — чтобы явно начать диалог.\n\n"
         "Если не найду ответ в документации — предложу оператора.",
         parse_mode=ParseMode.MARKDOWN,
@@ -193,9 +219,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 async def help_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     voice_line = (
         "🎤 Голосовое — Whisper распознает и отвечает.\n"
-        "🖼 Фото/скриншот — распознаю и ищу в документации.\n"
         if whisper_ready()
-        else "🎤 Голос: faster-whisper + ffmpeg.\n🖼 Фото: нужен OLLAMA_VISION_MODEL.\n"
+        else "🎤 Голос: faster-whisper + ffmpeg.\n"
     )
     await update.message.reply_text(
         f"«{BTN_ASK}» — задать вопрос по документации\n"
@@ -260,9 +285,9 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
     if not vision_ready():
         await message.reply_text(
-            "🖼 Распознавание скриншотов пока недоступно.\n"
-            "На сервере задайте OLLAMA_VISION_MODEL=qwen2-vl:7b и выполните "
-            "`ollama pull qwen2-vl:7b`.\n\n"
+            "🖼 Распознавание изображений пока недоступно.\n"
+            "Задайте OLLAMA_VISION_MODEL=qwen2.5vl:3b и выполните "
+            "`docker exec bars-support-bot-ollama-1 ollama pull qwen2.5vl:3b`.\n\n"
             "Или опишите проблему текстом.",
             reply_markup=MAIN_KEYBOARD,
         )
@@ -273,7 +298,7 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     if not rl.allowed:
         record_rate_limit(sid, rate_text)
         msg = rate_limit_message(rl)
-        append_message(sid, "user", f"[фото] {caption or 'скриншот'}")
+        append_message(sid, "user", f"[фото] {caption or 'фото'}")
         append_message(sid, "assistant", msg)
         await message.reply_text(msg, reply_markup=MAIN_KEYBOARD)
         return
@@ -283,8 +308,8 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         try:
             tg_file = await context.bot.get_file(photo.file_id)
             image_bytes = bytes(await tg_file.download_as_bytearray())
-            append_message(sid, "user", f"[фото] {caption or 'скриншот'}")
-            result = await ask_from_image_async(image_bytes, caption)
+            append_message(sid, "user", f"[фото] {caption or 'фото'}")
+            result = await ask_from_image_async(image_bytes, caption, channel="telegram")
         except Exception as exc:
             logger.exception("photo failed")
             await status.edit_text(
@@ -304,6 +329,7 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
             result.needs_operator and not result.escalated,
             edit_message=status,
             images=result.images,
+            sources=result.sources,
         )
 
 
@@ -340,15 +366,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         await _process_question(update, context, text)
         return
 
-    # Прямой вопрос без нажатия «Задать вопрос»
-    if len(text) > 12 and text.endswith("?"):
-        await _process_question(update, context, text)
-        return
-
-    await update.message.reply_text(
-        f"Напишите вопрос текстом или нажмите «{BTN_ASK}».",
-        reply_markup=MAIN_KEYBOARD,
-    )
+    await _process_question(update, context, text)
 
 
 async def operator_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
