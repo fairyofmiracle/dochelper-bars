@@ -2,7 +2,8 @@
 
 **Команда:** one_commit (solo — один участник)  
 **Хакатон:** «Королева Кода»  
-**Кейс:** АО «Барс Груп»
+**Кейс:** АО «Барс Груп»  
+**Репозиторий:** https://github.com/fairyofmiracle/dochelper-bars
 
 ---
 
@@ -91,7 +92,7 @@ python scripts\test_brief_cases.py
 ## 4. Исходный код
 
 ```
-https://github.com/YOUR_USERNAME/bars-support-bot
+https://github.com/fairyofmiracle/dochelper-bars
 ```
 
 Установка: **[README.md](README.md)**

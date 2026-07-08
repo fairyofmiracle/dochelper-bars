@@ -1,8 +1,6 @@
 # DocHelper Барс
 
-**AI-агент первой линии поддержки** для корпоративной документации АО «Барс Груп»
-
-Хакатон **«Королева Кода»** · кейс **Барс Груп** · команда **one_commit** (solo)
+**AI-агент первой линии поддержки** по корпоративной документации · кейс **АО «Барс Груп»** · хакатон **«Королева Кода»**
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](requirements.txt)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-green.svg)](https://fastapi.tiangolo.com/)
@@ -13,202 +11,99 @@
 
 ## О проекте
 
-**DocHelper** — не «чат с ChatGPT», а **orchestrated RAG pipeline** из шести AI-агентов: сотрудник задаёт вопрос в **Telegram** или **Web**, система ищет ответ в docx заказчика, формирует ответ **только по найденным фрагментам**, указывает **источник** и при необходимости прикладывает **иллюстрацию из документа**. Если уверенность низкая или темы нет в базе — **эскалация к оператору** без галлюцинаций.
-
-Проект создан за время хакатона **одним участником** (команда **one_commit**): backend, RAG, Telegram-бот, web-интерфейс, панель оператора, analytics, индексация docx с картинками, презентация и прогон 17 тест-кейсов брифа.
-
-### Ключевые результаты
+**DocHelper** — orchestrated **RAG pipeline** из шести AI-агентов. Сотрудник задаёт вопрос в **Telegram** или **Web** — система ищет ответ в docx, отвечает **только по найденным фрагментам**, указывает **источник** и прикладывает **иллюстрации из документа**. При низкой уверенности — **эскалация к оператору**.
 
 | Метрика | Значение |
 |---------|----------|
-| Автоответы на брифе | **94%** (16/17) при цели **≥ 40%** |
+| Автоответы на брифе | **94%** (16/17), цель **≥ 40%** |
 | Среднее время ответа | **~1,6 с** |
-| AI-агентов в pipeline | **6** (+ vision при индексации) |
-| Каналы | **Telegram** + **Web** + **Operator panel** |
+| Каналы | Telegram · Web · Operator panel |
 
-Подробный отчёт: [TEST_REPORT.md](TEST_REPORT.md)
+Отчёт по тестам: [TEST_REPORT.md](TEST_REPORT.md)
 
 ---
 
-## Что умеет
+## Возможности
 
-- **RAG** по docx / pdf / md — Qdrant + `multilingual-e5-base`
-- **Распознавание текста в картинках docx** — vision + OCR для слайдов «Ценности»
-- **Confidence gate** — ниже порога → оператор, не выдумка
-- **Telegram** — текст, голос (Whisper), фото (vision → RAG)
-- **Web-чат** — источник, скачивание docx, иллюстрации
-- **Панель оператора** — очередь эскалаций, ответ пользователю, analytics
-- **Analytics** — weak spots, тренды, % авто/эскалация
-- **Rate limit** — защита от спама (Redis)
-- **Dual LLM** — GigaChat (demo) / Ollama (закрытый контур prod)
+- RAG по docx / pdf / md — **Qdrant** + `multilingual-e5-base`
+- Распознавание текста в **картинках docx** (vision + OCR)
+- **Confidence gate** — без галлюцинаций
+- Telegram: текст, голос (Whisper), фото (vision → RAG)
+- Web-чат: источник, скачивание docx, схемы
+- Панель оператора, analytics, rate limit
+- **GigaChat** (demo) / **Ollama** (закрытый контур)
 
 ---
 
 ## Архитектура
 
 ```
-Telegram / Web
-      ↓
- FastAPI Orchestrator
-      ↓
- Speech → Retriever (e5+Qdrant) → Generator (LLM) → Evaluator
-      ↓                              ↓
- Escalation (operator)          Analytics (Redis)
+Telegram / Web → FastAPI Orchestrator
+  → Speech → Retriever (e5+Qdrant) → Generator (LLM) → Evaluator
+  → Escalation (operator) · Analytics (Redis)
 ```
 
-**Хранение:** docx на диске · векторы в **Qdrant** · сессии и analytics в **Redis** · картинки из docx в `DATA_ROOT/doc-images`
+**Хранение:** docx на диске · векторы — **Qdrant** · сессии — **Redis**
 
 ---
 
 ## Быстрый старт
 
-### Требования
-
-- Python **3.10+**
-- **Docker Desktop** (Qdrant, Redis, Ollama)
-- **~8 GB RAM**
-- Каталог данных **`D:/bars-support-bot-data`** (или свой `DATA_ROOT`) — модели **не в Git**
-
-### 1. Клонирование
+**Требования:** Python 3.10+, Docker (Qdrant, Redis, Ollama), ~8 GB RAM
 
 ```powershell
-git clone https://github.com/YOUR_USERNAME/bars-support-bot.git
-cd bars-support-bot
-```
+git clone https://github.com/fairyofmiracle/dochelper-bars.git
+cd dochelper-bars
 
-> Замените `YOUR_USERNAME` на свой GitHub после публикации репозитория.
-
-### 2. Документы кейса
-
-Положите 4 docx из материалов хакатона в `data/docs/`:
-
-- `Functionalnie.docx`
-- `Komandirovka.docx`
-- `ReestrMebeli.docx`
-- `newbiePage.docx`
-
-```powershell
-.\scripts\copy_docs.ps1   # если docx лежат в папке материалов AO_BARS_GRUP
-```
-
-### 3. Python и env
-
-```powershell
 python -m venv .venv
 .\.venv\Scripts\pip install -r requirements.txt
 copy .env.example .env
-# Заполните: TELEGRAM_BOT_TOKEN, GIGACHAT_* или LLM_PROVIDER=ollama
 ```
 
-### 4. Docker и модели
-
-```powershell
-.\scripts\setup_d_drive.ps1
-.\scripts\docker_up.ps1
-```
-
-### 5. Индексация и запуск
-
-```powershell
-$env:DATA_ROOT="D:/bars-support-bot-data"
-$env:QDRANT_URL="http://127.0.0.1:6333"
-.\.venv\Scripts\python scripts\ingest.py --clear
-.\scripts\start_local.ps1
-```
+1. Положите docx в `data/docs/` (см. [data/docs/README.md](data/docs/README.md))
+2. Запустите Docker: `.\scripts\docker_up.ps1`
+3. Индексация: `.\.venv\Scripts\python scripts\ingest.py --clear`
+4. Запуск: `.\scripts\start_local.ps1`
 
 | URL | Назначение |
 |-----|------------|
 | http://127.0.0.1:8026 | Web-чат |
 | http://127.0.0.1:8026/operator | Панель оператора |
-| http://127.0.0.1:8026/presentation | HTML-презентация |
+| http://127.0.0.1:8026/presentation | Презентация |
 | http://127.0.0.1:8026/api/health | Health-check |
 
-```powershell
-python scripts\test_brief_cases.py   # 17 кейсов брифа
-.\scripts\check_ready.ps1
-```
+Тесты брифа: `python scripts\test_brief_cases.py`
 
 ---
 
 ## Telegram
 
-1. Токен от [@BotFather](https://t.me/BotFather) → `TELEGRAM_BOT_TOKEN` в `.env`
-2. `/start` — меню · «Задать вопрос» · голос · фото
-3. При низкой уверенности — кнопка **«Переключить на оператора»**
-
-> Одновременно работает **только один** инстанс бота (локальный Python **или** Docker `app`).
+Токен [@BotFather](https://t.me/BotFather) → `TELEGRAM_BOT_TOKEN` в `.env`.  
+Команды: `/start`, `/help`, `/operator`.
 
 ---
 
-## Стек технологий
+## Стек
 
-| Слой | Технологии |
-|------|------------|
-| Backend | Python, FastAPI, Pydantic |
-| RAG | Qdrant, sentence-transformers e5, chunking |
-| LLM | GigaChat API / Ollama (qwen2.5) |
-| Vision | Ollama qwen2.5vl (docx + скрины пользователя) |
-| Speech | faster-whisper |
-| Cache / sessions | Redis |
-| Frontend | HTML/CSS/JS (чат, operator, presentation) |
-| Bot | python-telegram-bot |
-| Infra | Docker Compose |
+Python · FastAPI · Qdrant · Redis · sentence-transformers · GigaChat / Ollama · faster-whisper · python-telegram-bot · Docker Compose
 
 ---
 
-## Структура репозитория
+## Структура
 
 ```
-app/
-  rag/           — парсинг docx, embeddings, Qdrant, vision, картинки
-  llm/           — GigaChat / Ollama
-  services/      — RAG-чат, analytics, эскалация, rate limit, Whisper
-  bot/           — Telegram
-  api/           — REST API
-static/          — Web UI, operator, presentation
-scripts/         — ingest, тесты брифа, docker, запуск
-data/docs/       — docx для индексации (не в Git — см. data/docs/README.md)
+app/rag/      — парсинг, embeddings, Qdrant, vision
+app/llm/      — GigaChat / Ollama
+app/services/ — RAG, analytics, эскалация
+app/bot/      — Telegram
+static/       — Web UI, operator, presentation
+scripts/      — ingest, тесты, docker
 ```
 
 ---
 
-## Материалы хакатона
+## Автор
 
-| Документ | Описание |
-|----------|----------|
-| [SUBMISSION.md](SUBMISSION.md) | Описание для сдачи, AI-раскрытие, чеклист |
-| [PRESENTATION.md](PRESENTATION.md) | Текст слайдов |
-| [SPEECH_SHORT.md](SPEECH_SHORT.md) | Речь для защиты (по слайдам) |
-| [DEFENSE_SCORING.md](DEFENSE_SCORING.md) | Защита по критериям жюри |
-| [TEST_REPORT.md](TEST_REPORT.md) | Метрики 17 кейсов брифа |
-| [DEFENSE.md](DEFENSE.md) | Q&A для проверяющего |
+**one_commit** · [github.com/fairyofmiracle/dochelper-bars](https://github.com/fairyofmiracle/dochelper-bars)
 
----
-
-## Команда
-
-**one_commit** — solo-проект на хакатоне «Королева Кода»
-
-Один участник: проектирование, RAG, backend, Telegram, web UI, operator panel, индексация docx с vision, тесты брифа, презентация и защита.
-
----
-
-## Лицензия и данные
-
-- Исходный код — для демонстрации решения кейса хакатона.
-- Корпоративные docx **не включены** в репозиторий — только инструкция в [data/docs/README.md](data/docs/README.md).
-- **Не коммитьте** `.env` с токенами (уже в `.gitignore`).
-
----
-
-## Публикация на GitHub
-
-```powershell
-# После создания пустого репозитория на github.com:
-git remote add github https://github.com/YOUR_USERNAME/bars-support-bot.git
-git add .
-git commit -m "DocHelper: RAG support bot for Bars Group hackathon case"
-git push -u github main
-```
-
-Перед push убедитесь: `.env` не в staging, docx не добавлены случайно.
+Корпоративные docx и `.env` в репозиторий **не входят** (см. `.gitignore`).
